@@ -1,701 +1,1068 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Financial MCP — Canonical Surface</title>
-  <style>
-    @import url(https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap);:root{--font-sans:'Inter','Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;--font-mono:'JetBrains Mono','GeistMono','Fira Code','Courier New',monospace;--text-xs-1:0.625rem;--text-xs:0.75rem;--text-sm-1:0.813rem;--text-sm:0.875rem;--text-base:1rem;--text-h1:2rem;--text-h2:1.5rem;--text-h3:1rem;--text-h4:0.875rem;--text-h5:0.75rem;--lh-h1:2rem;--lh-h2:1.5rem;--lh-h3:1.3125rem;--lh-h4:1.125rem;--lh-h5:1rem;--radius-sm:4px;--radius-md:6px;--radius-lg:8px;--radius-xl:12px;--radius-2xl:16px;--radius-full:9999px;--space-0-5:0.125rem;--space-1:0.25rem;--space-1-5:0.375rem;--space-2:0.5rem;--space-2-5:0.625rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--shadow-sm:0 1px 2px rgba(0, 0, 0, 0.4);--shadow-md:0 4px 6px -1px rgba(0, 0, 0, 0.5),0 2px 4px -2px rgba(0, 0, 0, 0.3);--shadow-lg:0 10px 15px -3px rgba(0, 0, 0, 0.6),0 4px 6px -4px rgba(0, 0, 0, 0.4);--shadow-sidebar:-1px 0 0 0 rgba(255, 255, 255, 0.1);--transition-fast:120ms ease;--transition-base:200ms ease;--transition-slow:300ms ease;--navbar-width:72px;--navbar-width-expanded:196px;--sidebar-width:308px;--layout-header-height:56px;--card-height:158px;--z-dropdown:30;--z-sticky:40;--z-modal:50;--z-toast:60}:root,:root.dark{--color-bg-page:#1A1A1A;--color-bg-sidebar:#151515;--color-bg-card:#151515;--color-bg-nav:#000000;--color-bg-elevated:#2E2E2E;--color-bg-secondary:#212224;--color-bg-tertiary:#2E3033;--color-bg-quaternary:#333436;--color-bg-hover:#212224;--color-bg-hover-strong:#333436;--color-bg-input:#1A1A1A;--color-bg-input-prefix:#333436;--color-bg-btn-primary:#20222E;--color-bg-btn-primary-h:#262941;--color-bg-pagination-active:#212224;--color-text-primary:#FFFFFF;--color-text-secondary:#F2F0EF;--color-text-tertiary:#CCCCCC;--color-text-muted:#BBBBBB;--color-text-placeholder:#CCCCCC;--color-text-link:#F2F0EF;--color-text-link-hover:#F2F0EF;--color-text-inverse:#FFFFFF;--color-text-heading:#BBBBBB;--color-text-nav:#CCCCCC;--color-border-primary:#333436;--color-border-secondary:#47484A;--color-border-structural:#333436;--color-border-subtle:#4C4C4C;--color-border-accent:#FFFFFF;--color-border-focus:#FFFFFF;--color-border-error:#F9303C;--color-border-panel:#333436;--color-border-btn-secondary:#333436;--color-border-btn-secondary-h:transparent;--color-icon-primary:#FFFFFF;--color-icon-secondary:#CCCCCC;--color-icon-tertiary:#999999;--color-icon-error:#F9303C;--color-success:#259F4C;--color-success-bg:#1B271F;--color-success-border:#259F4C;--color-success-text:#259F4C;--color-error:#F9303C;--color-error-bg:#262121;--color-error-border:#FE3B4C;--color-error-text:#FE3B4C;--color-warning:#F5A534;--color-warning-bg:#492B00;--color-warning-border:#663B00;--color-warning-text:#F5A534;--color-info:#2297F6;--color-info-bg:#002442;--color-info-border:#003A69;--color-info-text:#2297F6;--color-purple:#C084FC;--color-purple-bg:#2D1B3D;--color-purple-border:#2D1B3D;--color-purple-text:#F3E8FF;--color-cyan:#06B6D4;--color-cyan-bg:#003942;--color-cyan-border:#005866;--status-not-started-text:#A0A0A0;--status-not-started-bg:#333333;--status-not-started-border:#4C4C4C;--status-in-progress-text:#2297F6;--status-in-progress-bg:#002442;--status-in-progress-border:#003A69;--status-pending-text:#06B6D4;--status-pending-bg:#003942;--status-pending-border:#005866;--status-success-text:#259F4C;--status-success-bg:#1B271F;--status-success-border:#259F4C;--status-error-text:#FE3B4C;--status-error-bg:#262121;--status-error-border:#FE3B4C;--status-warning-text:#F5A534;--status-warning-bg:#492B00;--status-warning-border:#663B00;--status-advanced-text:#C084FC;--status-advanced-bg:#2D1B3D;--status-advanced-border:#2D1B3D;--gradient-primary-btn:linear-gradient(90deg, #672D92, #547CCC);--gradient-brand:linear-gradient(152deg, #0078C2, #0047FF, #8453D2);--gradient-magical:linear-gradient(90deg, #672D92, #5677C8);--gradient-purple-radial:radial-gradient(271.77% 163.1% at 50% -10.71%, #200E32 0%, #9E00FF 75.14%, #EC56FF 100%);--gradient-switch-off:linear-gradient(to right, #BBB, #666);--gradient-switch-on:linear-gradient(to right, #672C92, #547CCC);--blue-25:#F1F8FF;--blue-50:#D5E7FC;--blue-100:#B2D7FF;--blue-300:#2297F6;--blue-400:#007AFF;--blue-500:#4E32FF;--blue-550:#0C4DAF;--blue-600:#003A69;--blue-800:#002442}.light{--color-bg-page:#F9F9F9;--color-bg-sidebar:#FBFBFB;--color-bg-card:#FFFFFF;--color-bg-nav:#FBFBFB;--color-bg-elevated:#FFFFFF;--color-bg-secondary:#FFFFFF;--color-bg-tertiary:#FBFBFB;--color-bg-quaternary:#B2D7FF;--color-bg-hover:#D5E7FC;--color-bg-hover-strong:#D5E7FC;--color-bg-input:#FFFFFF;--color-bg-input-prefix:#EEEEEE;--color-bg-btn-primary:#D5E7FC;--color-bg-btn-primary-h:#B2D7FF;--color-bg-pagination-active:#D5E7FC;--color-text-primary:#333333;--color-text-secondary:#333333;--color-text-tertiary:#333333;--color-text-muted:#666666;--color-text-placeholder:#999999;--color-text-link:#007AFF;--color-text-link-hover:#0C4DAF;--color-text-inverse:#FFFFFF;--color-text-heading:#007AFF;--color-text-nav:#FFFFFF;--color-border-primary:#CCCCCC;--color-border-secondary:#BBBBBB;--color-border-structural:#E5E5E5;--color-border-subtle:#999999;--color-border-accent:#007AFF;--color-border-focus:#000000;--color-border-error:#F9303C;--color-border-panel:#E5E5E5;--color-border-btn-secondary:transparent;--color-border-btn-secondary-h:#007AFF;--color-icon-primary:#666666;--color-icon-secondary:#333333;--color-icon-tertiary:#707070;--color-icon-error:#F9303C;--color-success:#259F4C;--color-success-bg:#E6F7E6;--color-success-border:#259F4C;--color-success-text:#259F4C;--color-error:#F9303C;--color-error-bg:#F0E2E3;--color-error-border:#FE3B4C;--color-error-text:#FE3B4C;--color-warning:#F5A534;--color-warning-bg:#FAF2E7;--color-warning-border:#F5A534;--color-warning-text:#F5A534;--color-info:#2297F6;--color-info-bg:#D5E7FC;--color-info-border:#2297F6;--color-info-text:#2297F6;--color-purple:#8B5CF6;--color-purple-bg:#F3E8FF;--color-purple-border:#F3E8FF;--color-purple-text:#C084FC;--color-cyan:#06B6D4;--color-cyan-bg:#DFFAFF;--color-cyan-border:#005866;--status-not-started-text:#A0A0A0;--status-not-started-bg:#EEEEEE;--status-not-started-border:#999999;--status-in-progress-text:#2297F6;--status-in-progress-bg:#D5E7FC;--status-in-progress-border:#2297F6;--status-pending-text:#06B6D4;--status-pending-bg:#DFFAFF;--status-pending-border:#06B6D4;--status-success-text:#259F4C;--status-success-bg:#E6F7E6;--status-success-border:#259F4C;--status-error-text:#FE3B4C;--status-error-bg:#F0E2E3;--status-error-border:#FE3B4C;--status-warning-text:#F5A534;--status-warning-bg:#FAF2E7;--status-warning-border:#F5A534;--status-advanced-text:#8B5CF6;--status-advanced-bg:#F3E8FF;--status-advanced-border:#C084FC;--gradient-primary-btn:linear-gradient(90deg, #3676f7, #cc22f2);--gradient-magical:linear-gradient(90deg, #3676f7, #cc22f2);--gradient-switch-off:linear-gradient(to right, #fff, #fff);--gradient-switch-on:linear-gradient(to right, #007AFF, #007AFF);--shadow-sm:0 1px 2px rgba(0, 0, 0, 0.06);--shadow-md:0 4px 6px -1px rgba(0, 0, 0, 0.08),0 2px 4px -2px rgba(0, 0, 0, 0.06);--shadow-lg:0 10px 15px -3px rgba(0, 0, 0, 0.1),0 4px 6px -4px rgba(0, 0, 0, 0.08)}*,::after,::before{box-sizing:border-box;margin:0;padding:0}html{font-size:16px;-webkit-text-size-adjust:100%;scroll-behavior:smooth}body{font-family:var(--font-sans);font-size:var(--text-sm);line-height:1.5;color:var(--color-text-primary);background-color:var(--color-bg-page);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}a{color:var(--color-text-link);text-decoration:none;transition:color var(--transition-fast)}a:hover{color:var(--color-text-link-hover);text-decoration:underline}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:0 0}::-webkit-scrollbar-thumb{background:var(--color-border-subtle);border-radius:var(--radius-full)}::-webkit-scrollbar-thumb:hover{background:var(--color-border-secondary)}::selection{background:rgba(34,151,246,.3);color:var(--color-text-primary)}:focus-visible{outline:2px solid var(--color-border-focus);outline-offset:2px;border-radius:var(--radius-sm)}img,svg,video{display:block;max-width:100%}ol,ul{list-style:none}code,kbd,pre,samp{font-family:var(--font-mono)}code{font-size:.875em;background:var(--color-bg-quaternary);color:var(--color-text-secondary);padding:.1em .4em;border-radius:var(--radius-sm);border:1px solid var(--color-border-primary)}pre{background:var(--color-bg-quaternary);border:1px solid var(--color-border-primary);border-radius:var(--radius-lg);padding:var(--space-4);overflow-x:auto;font-size:var(--text-xs);line-height:1.6;color:var(--color-text-secondary)}pre code{background:0 0;border:none;padding:0;font-size:inherit}.divider,hr{border:none;border-top:1px solid var(--color-border-structural);margin:var(--space-4) 0}.container{width:100%;max-width:1200px;margin:0 auto;padding:0 var(--space-4)}.section{padding:var(--space-8) 0}.icon-xs{width:12px;height:12px;flex-shrink:0}.icon-sm{width:16px;height:16px;flex-shrink:0}.icon-md{width:18px;height:18px;flex-shrink:0}.icon-lg{width:20px;height:20px;flex-shrink:0}.icon-xl{width:24px;height:24px;flex-shrink:0}.icon-2xl{width:32px;height:32px;flex-shrink:0}.h1,h1{font-size:var(--text-h1);line-height:var(--lh-h1);font-weight:700;color:var(--color-text-primary);letter-spacing:-.02em}.h2,h2{font-size:var(--text-h2);line-height:var(--lh-h2);font-weight:600;color:var(--color-text-primary)}.h3,h3{font-size:var(--text-h3);line-height:var(--lh-h3);font-weight:600;color:var(--color-text-primary)}.h4,h4{font-size:var(--text-h4);line-height:var(--lh-h4);font-weight:600;color:var(--color-text-primary)}.h5,h5{font-size:var(--text-h5);line-height:var(--lh-h5);font-weight:600;color:var(--color-text-primary)}.h6,h6{font-size:var(--text-xs);line-height:1.4;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em}.section-label{font-size:var(--text-xs);font-weight:600;color:var(--color-text-heading);text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-2)}.text-2xl{font-size:1.5rem}.text-xl{font-size:1.25rem}.text-lg{font-size:1.125rem}.text-base{font-size:var(--text-base)}.text-sm{font-size:var(--text-sm)}.text-sm-1{font-size:var(--text-sm-1)}.text-xs{font-size:var(--text-xs)}.text-xs-1{font-size:var(--text-xs-1)}.font-normal{font-weight:400}.font-medium{font-weight:500}.font-semibold{font-weight:600}.font-bold{font-weight:700}.text-primary{color:var(--color-text-primary)}.text-secondary{color:var(--color-text-secondary)}.text-tertiary{color:var(--color-text-tertiary)}.text-muted{color:var(--color-text-muted)}.text-link{color:var(--color-text-link)}.text-inverse{color:var(--color-text-inverse)}.text-success{color:var(--color-success-text)}.text-error{color:var(--color-error-text)}.text-warning{color:var(--color-warning-text)}.text-info{color:var(--color-info-text)}.uppercase{text-transform:uppercase}.capitalize{text-transform:capitalize}.lowercase{text-transform:lowercase}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.nowrap{white-space:nowrap}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}p{color:var(--color-text-secondary);font-size:var(--text-sm);line-height:1.6}p+p{margin-top:var(--space-3)}.caption{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.4}.mono{font-family:var(--font-mono);font-size:.9em}.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-1-5);font-family:var(--font-sans);font-weight:600;white-space:nowrap;border-radius:var(--radius-lg);border:1px solid transparent;cursor:pointer;transition:background-color var(--transition-base),border-color var(--transition-base),color var(--transition-base),opacity var(--transition-base);text-decoration:none;user-select:none;outline:0;position:relative;overflow:hidden;-webkit-font-smoothing:antialiased}.btn:focus-visible{outline:2px solid var(--color-border-focus);outline-offset:2px}.btn:disabled,.btn[aria-disabled=true]{cursor:not-allowed;opacity:.5;pointer-events:none}.btn-sm{height:24px;padding:0 var(--space-1-5);gap:var(--space-1);font-size:var(--text-xs);line-height:20px}.btn-md{height:28px;padding:0 var(--space-2);gap:var(--space-1-5);font-size:var(--text-xs);line-height:24px}.btn-lg{height:44px;padding:0 var(--space-4);gap:var(--space-2-5);font-size:var(--text-sm);line-height:28px}.btn-primary{background-color:var(--color-bg-btn-primary);color:var(--color-text-secondary);border:1px solid transparent;background-image:linear-gradient(var(--color-bg-btn-primary),var(--color-bg-btn-primary)),var(--gradient-primary-btn);background-origin:border-box;background-clip:padding-box,border-box}.btn-primary:hover:not(:disabled){background-image:linear-gradient(var(--color-bg-btn-primary-h),var(--color-bg-btn-primary-h)),var(--gradient-primary-btn)}.btn-secondary{background-color:var(--color-bg-secondary);color:var(--color-text-secondary);border-color:var(--color-border-btn-secondary)}.btn-secondary:hover:not(:disabled){background-color:var(--color-bg-hover-strong);border-color:var(--color-border-btn-secondary-h)}.btn-base{background-color:var(--color-bg-secondary);color:var(--color-text-primary);border-color:var(--color-border-structural)}.btn-base:hover:not(:disabled){background-color:var(--color-border-structural)}.btn-action{background-color:var(--color-bg-btn-primary);color:var(--color-text-secondary);border-color:var(--color-bg-input-prefix)}.btn-action:hover:not(:disabled){border-color:var(--color-border-btn-secondary-h);background-color:var(--color-bg-btn-primary-h)}.btn-delete{background-color:rgba(254,59,76,.1);color:var(--color-error-text);border-color:var(--color-error-border)}.btn-delete:hover:not(:disabled){background-color:rgba(254,59,76,.15);border-color:var(--color-error)}.btn-ghost,.btn-tertiary{background-color:transparent;color:var(--color-text-primary);border-color:transparent}.btn-ghost:hover:not(:disabled),.btn-tertiary:hover:not(:disabled){background-color:var(--color-border-structural)}.btn-magical{background:var(--gradient-magical);color:var(--color-text-inverse);border-color:var(--color-border-structural)}.btn-magical:hover:not(:disabled){filter:brightness(1.1)}.btn-link{background:0 0;border-color:transparent;color:var(--color-text-link);padding-left:0;padding-right:0;font-weight:500;height:auto}.btn-link:hover:not(:disabled){text-decoration:underline}.btn-icon{padding:0;aspect-ratio:1}.btn-icon.btn-sm{width:24px}.btn-icon.btn-md{width:28px}.btn-icon.btn-lg{width:44px}.btn-full{width:100%}.btn-loading{cursor:wait;pointer-events:none}.btn-loading::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0,rgba(255,255,255,.12) 50%,transparent 100%);background-size:200% 100%;animation:btn-shimmer 1.5s infinite linear}@keyframes btn-shimmer{from{background-position:-200% 0}to{background-position:200% 0}}.btn-group{display:inline-flex;gap:0}.btn-group .btn{border-radius:0}.btn-group .btn:first-child{border-radius:var(--radius-lg) 0 0 var(--radius-lg)}.btn-group .btn:last-child{border-radius:0 var(--radius-lg) var(--radius-lg) 0}.btn-group .btn:not(:first-child){margin-left:-1px}.form-group{display:flex;flex-direction:column;gap:var(--space-1)}.form-label{display:flex;align-items:center;gap:var(--space-0-5);font-size:var(--text-xs);font-weight:500;color:var(--color-text-muted)}.form-label .required{color:var(--color-error);margin-left:1px}.input-wrapper{display:flex;align-items:stretch;min-height:32px;max-height:32px;border:1px solid var(--color-border-primary);border-radius:var(--radius-lg);background-color:var(--color-bg-input);transition:border-color var(--transition-base),box-shadow var(--transition-base);overflow:hidden}.input-wrapper:hover:not(.input-disabled){border-color:var(--color-border-secondary)}.input-wrapper:focus-within:not(.input-disabled){border-color:var(--color-border-secondary)}.input-wrapper.input-error{border-color:var(--color-border-error)}.input-wrapper.input-disabled{opacity:.6;cursor:not-allowed}.form-input{flex:1;background:0 0;border:none;outline:0;font-family:var(--font-sans);font-size:var(--text-sm);color:var(--color-text-primary);padding:0 var(--space-2);min-width:0}.form-input::placeholder{color:var(--color-text-placeholder)}.form-input:disabled{cursor:not-allowed}.input,input.input{display:block;width:100%;height:32px;padding:0 var(--space-2);background-color:var(--color-bg-input);border:1px solid var(--color-border-primary);border-radius:var(--radius-lg);font-family:var(--font-sans);font-size:var(--text-sm);color:var(--color-text-primary);outline:0;transition:border-color var(--transition-base)}.input::placeholder,input.input::placeholder{color:var(--color-text-placeholder)}.input:hover,input.input:hover{border-color:var(--color-border-secondary)}.input:focus,input.input:focus{border-color:var(--color-border-secondary)}.input.input-error,input.input.input-error{border-color:var(--color-border-error)}.input:disabled,input.input:disabled{opacity:.6;cursor:not-allowed}.input-lg{height:40px;font-size:var(--text-base);padding:0 var(--space-3)}.input-prefix,.input-suffix{display:flex;align-items:center;padding:0 var(--space-2);font-size:var(--text-xs);color:var(--color-text-tertiary);background-color:var(--color-bg-input-prefix);white-space:nowrap;flex-shrink:0;border-right:1px solid var(--color-border-subtle)}.input-suffix{border-right:none;border-left:1px solid var(--color-border-subtle)}.input-adornment{display:flex;align-items:center;padding:0 var(--space-2);color:var(--color-icon-tertiary);flex-shrink:0}.textarea,textarea.textarea{display:block;width:100%;min-height:80px;max-height:384px;padding:var(--space-2-5) var(--space-3);background-color:var(--color-bg-input);border:1px solid var(--color-border-primary);border-radius:var(--radius-lg);font-family:var(--font-sans);font-size:var(--text-sm);color:var(--color-text-primary);outline:0;resize:vertical;line-height:1.5;transition:border-color var(--transition-base)}.textarea::placeholder,textarea.textarea::placeholder{color:var(--color-text-placeholder)}.textarea:hover,textarea.textarea:hover{border-color:var(--color-border-secondary)}.textarea:focus,textarea.textarea:focus{border-color:var(--color-border-secondary)}.textarea.textarea-error,textarea.textarea.textarea-error{border-color:var(--color-border-error)}.textarea:disabled,textarea.textarea:disabled{background-color:var(--color-bg-secondary);color:var(--color-text-tertiary);cursor:not-allowed;opacity:.7}.select-trigger{display:flex;align-items:center;justify-content:space-between;height:32px;padding:0 var(--space-2);background-color:var(--color-bg-input);border:1px solid var(--color-border-primary);border-radius:var(--radius-lg);font-family:var(--font-sans);font-size:var(--text-sm);color:var(--color-text-primary);cursor:pointer;user-select:none;transition:border-color var(--transition-base);gap:var(--space-2)}.select-trigger:hover{border-color:var(--color-border-secondary)}.select-trigger.select-open{border-color:var(--color-border-secondary)}.select-trigger .select-arrow{color:var(--color-icon-tertiary);flex-shrink:0;transition:transform var(--transition-base)}.select-trigger.select-open .select-arrow{transform:rotate(180deg)}select.select{display:block;width:100%;height:32px;padding:0 var(--space-2);background-color:var(--color-bg-input);border:1px solid var(--color-border-primary);border-radius:var(--radius-lg);font-family:var(--font-sans);font-size:var(--text-sm);color:var(--color-text-primary);outline:0;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:28px}select.select:hover{border-color:var(--color-border-secondary)}select.select:focus{border-color:var(--color-border-secondary)}.select-panel{position:absolute;z-index:var(--z-dropdown);min-width:160px;max-width:256px;margin-top:var(--space-2);padding:var(--space-1-5);background-color:var(--color-bg-elevated);border:1px solid var(--color-border-panel);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);max-height:240px;overflow-y:auto}.select-option{display:block;padding:var(--space-1-5) var(--space-2-5);font-size:var(--text-sm);color:var(--color-text-primary);border-radius:var(--radius-md);cursor:pointer;transition:background-color var(--transition-fast);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.select-option:hover{background-color:var(--color-bg-hover-strong)}.select-option.selected{background-color:var(--color-bg-hover);font-weight:500}.checkbox-wrapper{display:inline-flex;align-items:center;gap:var(--space-2);cursor:pointer;user-select:none}.checkbox-wrapper input[type=checkbox]{position:absolute;opacity:0;width:0;height:0}.checkbox-box{display:flex;align-items:center;justify-content:center;width:20px;height:20px;flex-shrink:0;border-radius:var(--radius-md);border:2px solid var(--color-border-primary);background-color:var(--color-bg-elevated);transition:border-color var(--transition-fast),background-color var(--transition-fast)}.checkbox-wrapper:hover .checkbox-box{border-color:var(--color-border-secondary)}.checkbox-wrapper input[type=checkbox]:checked+.checkbox-box{border-color:var(--color-text-primary);background-color:var(--color-text-primary)}.checkbox-check{display:none;width:12px;height:12px;color:var(--color-bg-page)}.checkbox-wrapper input[type=checkbox]:checked+.checkbox-box .checkbox-check{display:block}.checkbox-label{font-size:var(--text-sm);color:var(--color-text-primary)}.checkbox-wrapper.disabled{opacity:.6;cursor:not-allowed;pointer-events:none}.radio-wrapper{display:inline-flex;align-items:center;gap:var(--space-2);cursor:pointer;user-select:none}.radio-wrapper input[type=radio]{position:absolute;opacity:0;width:0;height:0}.radio-dot{display:flex;align-items:center;justify-content:center;width:18px;height:18px;flex-shrink:0;border-radius:var(--radius-full);border:2px solid var(--color-border-primary);background-color:var(--color-bg-elevated);transition:border-color var(--transition-fast),background-color var(--transition-fast)}.radio-dot::after{content:'';width:8px;height:8px;border-radius:var(--radius-full);background-color:var(--color-bg-page);opacity:0;transition:opacity var(--transition-fast)}.radio-wrapper:hover .radio-dot{border-color:var(--color-border-secondary)}.radio-wrapper input[type=radio]:checked+.radio-dot{border-color:var(--color-text-primary);background-color:var(--color-text-primary)}.radio-wrapper input[type=radio]:checked+.radio-dot::after{opacity:1}.radio-label{font-size:var(--text-sm);color:var(--color-text-primary)}.switch-wrapper{display:inline-flex;align-items:center;gap:var(--space-2);cursor:pointer;user-select:none}.switch-wrapper input[type=checkbox]{position:absolute;opacity:0;width:0;height:0}.switch-track{position:relative;width:32px;height:16px;border-radius:var(--radius-full);background:var(--gradient-switch-off);border:1px solid var(--color-border-primary);transition:background var(--transition-base),border-color var(--transition-base);flex-shrink:0}.switch-wrapper input[type=checkbox]:checked+.switch-track{background:var(--gradient-switch-on);border-color:var(--color-border-accent)}.switch-knob{position:absolute;top:1px;left:2px;width:12px;height:12px;border-radius:var(--radius-full);background-color:#ccc;transition:transform var(--transition-base),background-color var(--transition-base);pointer-events:none}.switch-wrapper input[type=checkbox]:checked~.switch-track .switch-knob{transform:translateX(16px);background-color:#fff}.switch-track.switch-on .switch-knob{transform:translateX(16px);background-color:#fff}.switch-label{font-size:var(--text-xs);color:var(--color-text-muted);transition:color var(--transition-fast)}.switch-wrapper:hover .switch-label{color:var(--color-border-accent)}.form-error{font-size:var(--text-sm);color:var(--color-error-text);display:flex;align-items:center;gap:var(--space-1);margin-top:var(--space-0-5)}.form-helper{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-0-5)}.search-input-wrapper{position:relative;display:flex;align-items:center}.search-input-wrapper .search-icon{position:absolute;left:var(--space-2);color:var(--color-icon-tertiary);pointer-events:none}.search-input-wrapper input{padding-left:28px}.card{display:flex;flex-direction:column;background-color:var(--color-bg-card);border:1px solid var(--color-border-structural);border-radius:var(--radius-xl);overflow:hidden;transition:border-color var(--transition-base),box-shadow var(--transition-base)}.card:hover{border-color:var(--color-border-secondary)}.card-fixed{height:var(--card-height)}.card-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4);border-bottom:1px solid var(--color-border-structural)}.card-body{flex:1;padding:var(--space-4);overflow:hidden}.card-footer{padding:var(--space-3) var(--space-4);border-top:1px solid var(--color-border-structural);display:flex;align-items:center;gap:var(--space-2)}.card-title{font-size:var(--text-base);font-weight:600;color:var(--color-text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.card-subtitle{font-size:var(--text-xs);color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.card-description{font-size:var(--text-xs);color:var(--color-text-tertiary);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.panel{background-color:var(--color-bg-secondary);border:1px solid var(--color-border-panel);border-radius:var(--radius-lg);overflow:hidden}.panel-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-structural);background-color:var(--color-bg-tertiary)}.panel-body{padding:var(--space-4)}.badge{display:inline-flex;align-items:center;gap:var(--space-1-5);padding:0 var(--space-2);height:17px;line-height:17px;border-radius:var(--radius-full);border:1px solid;font-size:var(--text-xs-1);font-weight:700;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;user-select:none;flex-shrink:0}.badge-dot{width:7px;height:7px;border-radius:var(--radius-full);flex-shrink:0;display:inline-block}.badge-not-started{background-color:var(--status-not-started-bg);color:var(--status-not-started-text);border-color:var(--status-not-started-border)}.badge-not-started .badge-dot{background-color:var(--status-not-started-text)}.badge-in-progress{background-color:var(--status-in-progress-bg);color:var(--status-in-progress-text);border-color:var(--status-in-progress-border)}.badge-in-progress .badge-dot{background-color:var(--status-in-progress-text);animation:badge-pulse 2s cubic-bezier(.4,0,.6,1) infinite}.badge-pending{background-color:var(--status-pending-bg);color:var(--status-pending-text);border-color:var(--status-pending-border)}.badge-pending .badge-dot{background-color:var(--status-pending-text)}.badge-success{background-color:var(--status-success-bg);color:var(--status-success-text);border-color:var(--status-success-border)}.badge-success .badge-dot{background-color:var(--status-success-text)}.badge-error{background-color:var(--status-error-bg);color:var(--status-error-text);border-color:var(--status-error-border)}.badge-error .badge-dot{background-color:var(--status-error-text)}.badge-warning{background-color:var(--status-warning-bg);color:var(--status-warning-text);border-color:var(--status-warning-border)}.badge-warning .badge-dot{background-color:var(--status-warning-text)}.badge-advanced{background-color:var(--status-advanced-bg);color:var(--status-advanced-text);border-color:var(--status-advanced-border)}.badge-advanced .badge-dot{background-color:var(--status-advanced-text)}@keyframes badge-pulse{0%,100%{opacity:1}50%{opacity:.4}}.tag{display:inline-flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border-radius:var(--radius-lg);border:1px solid var(--color-border-secondary);background-color:var(--color-bg-secondary);font-size:var(--text-xs);font-weight:600;color:var(--color-text-tertiary);white-space:nowrap;user-select:none}.tag-sm{padding:1px var(--space-1-5);font-size:var(--text-xs-1);border-radius:var(--radius-md)}.tag-blue{background-color:var(--color-info-bg);border-color:var(--color-info-border);color:var(--color-info-text)}.tag-green{background-color:var(--color-success-bg);border-color:var(--color-success-border);color:var(--color-success-text)}.tag-red{background-color:var(--color-error-bg);border-color:var(--color-error-border);color:var(--color-error-text)}.tag-yellow{background-color:var(--color-warning-bg);border-color:var(--color-warning-border);color:var(--color-warning-text)}.tag-purple{background-color:var(--color-purple-bg);border-color:var(--color-purple-border);color:var(--color-purple-text)}.alert{display:flex;align-items:flex-start;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);border:1px solid;font-size:var(--text-xs);line-height:1.5}.alert-icon{flex-shrink:0;margin-top:1px}.alert-info{background-color:var(--color-info-bg);border-color:var(--color-info-border);color:var(--color-info-text)}.alert-success{background-color:var(--color-success-bg);border-color:var(--color-success-border);color:var(--color-success-text)}.alert-warning{background-color:var(--color-warning-bg);border-color:var(--color-warning-border);color:var(--color-warning-text)}.alert-error{background-color:var(--color-error-bg);border-color:var(--color-error-border);color:var(--color-error-text)}.avatar{display:flex;align-items:center;justify-content:center;border-radius:var(--radius-full);border:1px solid var(--color-border-secondary);background-color:var(--color-bg-elevated);overflow:hidden;flex-shrink:0;user-select:none;font-weight:600;color:#fff;font-size:var(--text-xs)}.avatar img{width:100%;height:100%;object-fit:cover;border-radius:var(--radius-full)}.avatar-xs{width:20px;height:20px;font-size:8px;border-width:1px}.avatar-sm{width:24px;height:24px;font-size:9px;border-width:1px}.avatar-md{width:32px;height:32px;font-size:var(--text-xs)}.avatar-chat{width:40px;height:40px;font-size:var(--text-sm)}.avatar-lg{width:72px;height:72px;font-size:var(--text-h3);border-width:2px}.avatar-xl{width:96px;height:96px;font-size:var(--text-h2);border-width:2px}.avatar-modal{width:176px;height:176px;font-size:var(--text-h1);border-width:2px}.avatar-color-0{background-color:#aa47bc}.avatar-color-1{background-color:#7a1fa2}.avatar-color-2{background-color:#6b8592}.avatar-color-3{background-color:#465a65}.avatar-color-4{background-color:#ec407a}.avatar-color-5{background-color:#c2175b}.avatar-color-6{background-color:#5c6bc0}.avatar-color-7{background-color:#0288d1}.avatar-color-8{background-color:#00579c}.avatar-color-9{background-color:#0098a6}.avatar-color-10{background-color:#00887a}.avatar-color-11{background-color:#004c3f}.avatar-color-12{background-color:#689f39}.avatar-color-13{background-color:#33691e}.avatar-color-14{background-color:#8c6e63}.avatar-color-15{background-color:#5d4038}.avatar-color-16{background-color:#7e57c2}.avatar-color-17{background-color:#512da7}.avatar-color-18{background-color:#ef6c00}.avatar-color-19{background-color:#f5511e}.avatar-color-20{background-color:#aa3410}.avatar-group{display:flex;align-items:center}.avatar-group .avatar{margin-left:-8px}.avatar-group .avatar:first-child{margin-left:0}.spinner{display:inline-block;border-radius:var(--radius-full);border-style:solid;border-color:var(--color-border-secondary);border-top-color:var(--color-text-primary);animation:spinner-spin .8s linear infinite;flex-shrink:0}.spinner-xs{width:12px;height:12px;border-width:1.5px}.spinner-sm{width:16px;height:16px;border-width:2px}.spinner-md{width:24px;height:24px;border-width:2px}.spinner-lg{width:32px;height:32px;border-width:3px}.spinner-xl{width:48px;height:48px;border-width:3px}.spinner-page{display:flex;justify-content:center;align-items:center;min-height:200px}@keyframes spinner-spin{to{transform:rotate(360deg)}}.progress-track{position:relative;overflow:hidden;background-color:var(--color-bg-tertiary);border-radius:68px;border:1px solid var(--color-border-secondary);width:85px;height:14px}.progress-fill{height:100%;background:var(--gradient-primary-btn);border-radius:68px;transition:width .2s ease-out}.progress-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:9px;line-height:10px;font-weight:600;color:var(--color-text-primary);white-space:nowrap}.progress-bar{width:100%;height:4px;background-color:var(--color-bg-tertiary);border-radius:var(--radius-full);overflow:hidden}.progress-bar .progress-fill{height:4px;border-radius:var(--radius-full)}.tooltip-wrapper{position:relative;display:inline-flex}.tooltip{position:absolute;z-index:var(--z-toast);bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background-color:var(--color-bg-elevated);color:var(--color-text-primary);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);font-size:var(--text-xs);line-height:1;white-space:nowrap;box-shadow:var(--shadow-md);pointer-events:none;opacity:0;transition:opacity var(--transition-fast)}.tooltip-wrapper:hover .tooltip{opacity:1}.tooltip-right{bottom:auto;top:50%;left:calc(100% + 8px);transform:translateY(-50%)}.tooltip-bottom{bottom:auto;top:calc(100% + 8px)}.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--space-8) var(--space-4);text-align:center;gap:var(--space-3)}.empty-state-icon{color:var(--color-icon-tertiary);margin-bottom:var(--space-1)}.empty-state-title{font-size:var(--text-h4);font-weight:600;color:var(--color-text-primary)}.empty-state-description{font-size:var(--text-sm);color:var(--color-text-muted);max-width:320px}.chip{display:inline-flex;align-items:center;gap:var(--space-1);padding:2px var(--space-1-5);border-radius:var(--radius-full);background-color:var(--color-bg-quaternary);border:1px solid var(--color-border-primary);font-size:var(--text-xs);color:var(--color-text-secondary)}.chip-close{display:flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:var(--radius-full);background:0 0;border:none;color:var(--color-icon-tertiary);cursor:pointer;padding:0;transition:color var(--transition-fast),background-color var(--transition-fast)}.chip-close:hover{color:var(--color-text-primary);background-color:var(--color-bg-hover)}.stat-card{display:flex;flex-direction:column;gap:var(--space-1);padding:var(--space-3) var(--space-4);background-color:var(--color-bg-card);border:1px solid var(--color-border-structural);border-radius:var(--radius-xl);min-width:0}.stat-card-label{font-size:var(--text-xs-1);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stat-card-value{font-size:var(--text-h2);font-weight:700;line-height:1.2;color:var(--color-text-primary)}.stat-card-desc{font-size:var(--text-xs);color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:var(--space-3)}.dl-grid{display:grid;grid-template-columns:max-content 1fr;gap:var(--space-2) var(--space-4);font-size:var(--text-sm)}.dl-grid dt{color:var(--color-text-muted);font-weight:500;white-space:nowrap}.dl-grid dd{color:var(--color-text-primary)}.table-wrapper{width:100%;overflow-x:auto}.table,table.table{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--text-xs);line-height:1.3}.table thead tr th{text-align:left;padding:var(--space-2-5) var(--space-4);font-weight:600;color:var(--color-text-primary);background-color:var(--color-bg-quaternary);border-top:1px solid var(--color-border-structural);border-bottom:1px solid var(--color-border-structural);white-space:nowrap;position:sticky;top:0;z-index:1}.table thead tr th:first-child{border-left:1px solid var(--color-border-structural);border-radius:var(--radius-lg) 0 0 0}.table thead tr th:last-child{border-right:1px solid var(--color-border-structural);border-radius:0 var(--radius-lg) 0 0}.table tbody tr td{padding:var(--space-3) var(--space-4);color:var(--color-text-secondary);border-bottom:1px solid var(--color-border-structural);vertical-align:middle}.table tbody tr:hover td{background-color:var(--color-bg-hover)}.table tbody tr:last-child td{border-bottom:none}.th-sortable{cursor:pointer;user-select:none;gap:var(--space-1)}.th-sortable:hover{color:var(--color-text-link)}.sort-icon{display:inline-flex;flex-direction:column;gap:1px;color:var(--color-icon-tertiary);flex-shrink:0}.th-sortable.sort-asc .sort-icon,.th-sortable.sort-desc .sort-icon{color:var(--color-text-primary)}.td-number{text-align:right;font-variant-numeric:tabular-nums}.tabs{display:flex;flex-direction:column}.tabs-list{display:flex;align-items:stretch;border-bottom:1px solid var(--color-border-panel);flex-shrink:0}.tab-item{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);padding:var(--space-2) var(--space-2);padding-bottom:var(--space-4);font-size:var(--text-sm);color:var(--color-text-primary);cursor:pointer;border-bottom:2px solid transparent;transition:border-color var(--transition-base),color var(--transition-base);text-decoration:none;white-space:nowrap;user-select:none;background:0 0;border-top:none;border-left:none;border-right:none;font-family:var(--font-sans)}.tab-item:hover{border-bottom-color:var(--color-text-tertiary)}.tab-item.active,.tab-item[aria-selected=true]{border-bottom-color:var(--color-text-primary);font-weight:600;cursor:default}.tabs-sm .tab-item{font-size:var(--text-xs);padding:var(--space-2-5);padding-bottom:var(--space-2-5)}.tabs-panel{flex:1;padding-top:var(--space-4)}.pagination{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);padding:var(--space-3) 0;border-top:1px solid var(--color-border-structural)}.pagination-info{color:var(--color-text-muted);font-size:var(--text-h5);margin-right:auto}.page-btn{display:flex;align-items:center;justify-content:center;height:32px;min-width:32px;padding:0 var(--space-2);background-color:var(--color-bg-secondary);border:1px solid var(--color-border-structural);border-radius:var(--radius-lg);color:var(--color-text-link);font-size:var(--text-h5);cursor:pointer;transition:border-color var(--transition-fast),background-color var(--transition-fast);user-select:none;text-decoration:none;font-family:var(--font-sans);font-weight:400}.page-btn:hover:not(.disabled){border-color:var(--color-border-accent)}.page-btn.active{border-color:var(--color-border-accent);background-color:var(--color-bg-pagination-active);font-weight:600}.page-btn.disabled{opacity:.4;cursor:not-allowed;pointer-events:none}.modal-overlay{position:fixed;inset:0;background-color:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:var(--z-modal);padding:var(--space-4)}.modal{display:flex;flex-direction:column;background-color:var(--color-bg-elevated);border:1px solid var(--color-border-panel);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);max-height:95vh;width:100%;overflow:hidden}.modal-sm{max-width:400px}.modal-md{max-width:512px}.modal-lg{max-width:720px}.modal-xl{max-width:1024px}.modal-full{max-width:90vw}.modal-header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-structural);flex-shrink:0}.modal-title{font-size:var(--text-base);font-weight:600;color:var(--color-text-primary)}.modal-close{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-lg);border:none;background:0 0;color:var(--color-icon-tertiary);cursor:pointer;transition:color var(--transition-fast),background-color var(--transition-fast);flex-shrink:0}.modal-close:hover{color:var(--color-text-primary);background-color:var(--color-bg-quaternary)}.modal-body{flex:1;padding:var(--space-4);overflow-y:auto}.modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-3);padding:var(--space-4);border-top:1px solid var(--color-border-structural);flex-shrink:0;background-color:var(--color-bg-elevated);border-radius:0 0 var(--radius-lg) var(--radius-lg)}.nav-sidebar{display:flex;flex-direction:column;gap:var(--space-0-5);padding:var(--space-2)}.nav-item{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--radius-lg);font-size:var(--text-sm);color:var(--color-text-nav);cursor:pointer;transition:background-color var(--transition-fast),color var(--transition-fast);text-decoration:none;user-select:none;white-space:nowrap;overflow:hidden}.nav-item:hover{background-color:var(--color-bg-hover);color:var(--color-text-primary)}.nav-item.active{background-color:var(--color-bg-secondary);color:var(--color-text-primary);font-weight:500}.nav-item .nav-icon{flex-shrink:0;color:var(--color-icon-tertiary);transition:color var(--transition-fast)}.nav-item.active .nav-icon,.nav-item:hover .nav-icon{color:var(--color-icon-primary)}.nav-group-label{padding:var(--space-2) var(--space-3) var(--space-1);font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em}.app-shell{display:flex;min-height:100vh}.app-navbar{width:var(--navbar-width);min-height:100vh;background-color:var(--color-bg-nav);display:flex;flex-direction:column;align-items:center;padding:var(--space-3) 0;flex-shrink:0;border-right:1px solid var(--color-border-structural)}.app-sidebar{width:var(--sidebar-width);min-height:100vh;background-color:var(--color-bg-sidebar);display:flex;flex-direction:column;border-right:1px solid var(--color-border-structural);flex-shrink:0}.app-content{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}.app-header{height:var(--layout-header-height);display:flex;align-items:center;padding:0 var(--space-4);border-bottom:1px solid var(--color-border-structural);background-color:var(--color-bg-page);flex-shrink:0;gap:var(--space-4)}.app-main{flex:1;padding:var(--space-4);overflow-y:auto}.hidden{display:none!important}.block{display:block}.inline{display:inline}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.flex-col{flex-direction:column}.flex-row{flex-direction:row}.flex-wrap{flex-wrap:wrap}.flex-nowrap{flex-wrap:nowrap}.flex-1{flex:1}.flex-auto{flex:auto}.flex-none{flex:none}.flex-shrink-0{flex-shrink:0}.grow{flex-grow:1}.items-start{align-items:flex-start}.items-center{align-items:center}.items-end{align-items:flex-end}.items-stretch{align-items:stretch}.justify-start{justify-content:flex-start}.justify-center{justify-content:center}.justify-end{justify-content:flex-end}.justify-between{justify-content:space-between}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}.grid-auto-fill-sm{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}.grid-auto-fill-md{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}.grid-auto-fill-lg{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}.gap-1{gap:var(--space-1)}.gap-2{gap:var(--space-2)}.gap-3{gap:var(--space-3)}.gap-4{gap:var(--space-4)}.gap-5{gap:var(--space-5)}.gap-6{gap:var(--space-6)}.gap-8{gap:var(--space-8)}.gap-x-2{column-gap:var(--space-2)}.gap-x-3{column-gap:var(--space-3)}.gap-x-4{column-gap:var(--space-4)}.gap-y-2{row-gap:var(--space-2)}.gap-y-3{row-gap:var(--space-3)}.gap-y-4{row-gap:var(--space-4)}.p-1{padding:var(--space-1)}.p-2{padding:var(--space-2)}.p-3{padding:var(--space-3)}.p-4{padding:var(--space-4)}.p-6{padding:var(--space-6)}.p-8{padding:var(--space-8)}.px-2{padding-left:var(--space-2);padding-right:var(--space-2)}.px-3{padding-left:var(--space-3);padding-right:var(--space-3)}.px-4{padding-left:var(--space-4);padding-right:var(--space-4)}.py-1{padding-top:var(--space-1);padding-bottom:var(--space-1)}.py-2{padding-top:var(--space-2);padding-bottom:var(--space-2)}.py-3{padding-top:var(--space-3);padding-bottom:var(--space-3)}.py-4{padding-top:var(--space-4);padding-bottom:var(--space-4)}.pt-2{padding-top:var(--space-2)}.pt-4{padding-top:var(--space-4)}.pt-8{padding-top:var(--space-8)}.pb-2{padding-bottom:var(--space-2)}.pb-4{padding-bottom:var(--space-4)}.m-auto{margin:auto}.mx-auto{margin-left:auto;margin-right:auto}.ml-auto{margin-left:auto}.mr-auto{margin-right:auto}.mt-1{margin-top:var(--space-1)}.mt-2{margin-top:var(--space-2)}.mt-3{margin-top:var(--space-3)}.mt-4{margin-top:var(--space-4)}.mt-6{margin-top:var(--space-6)}.mt-8{margin-top:var(--space-8)}.mb-1{margin-bottom:var(--space-1)}.mb-2{margin-bottom:var(--space-2)}.mb-3{margin-bottom:var(--space-3)}.mb-4{margin-bottom:var(--space-4)}.mb-6{margin-bottom:var(--space-6)}.w-full{width:100%}.w-auto{width:auto}.h-full{height:100%}.min-h-screen{min-height:100vh}.min-w-0{min-width:0}.max-w-sm{max-width:384px}.max-w-md{max-width:512px}.max-w-lg{max-width:720px}.max-w-xl{max-width:960px}.max-w-full{max-width:100%}.overflow-hidden{overflow:hidden}.overflow-auto{overflow:auto}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.overflow-visible{overflow:visible}.relative{position:relative}.absolute{position:absolute}.fixed{position:fixed}.sticky{position:sticky}.inset-0{inset:0}.top-0{top:0}.bottom-0{bottom:0}.left-0{left:0}.right-0{right:0}.z-10{z-index:10}.z-20{z-index:20}.z-30{z-index:var(--z-dropdown)}.z-50{z-index:var(--z-modal)}.z-60{z-index:var(--z-toast)}.rounded-sm{border-radius:var(--radius-sm)}.rounded-md{border-radius:var(--radius-md)}.rounded-lg{border-radius:var(--radius-lg)}.rounded-xl{border-radius:var(--radius-xl)}.rounded-2xl{border-radius:var(--radius-2xl)}.rounded-full{border-radius:var(--radius-full)}.bg-page{background-color:var(--color-bg-page)}.bg-card{background-color:var(--color-bg-card)}.bg-elevated{background-color:var(--color-bg-elevated)}.bg-secondary{background-color:var(--color-bg-secondary)}.bg-tertiary{background-color:var(--color-bg-tertiary)}.bg-success{background-color:var(--color-success-bg)}.bg-error{background-color:var(--color-error-bg)}.bg-warning{background-color:var(--color-warning-bg)}.bg-info{background-color:var(--color-info-bg)}.bg-brand{background:var(--gradient-brand)}.bg-magical{background:var(--gradient-magical)}.bg-purple-radial{background:var(--gradient-purple-radial)}.border{border:1px solid var(--color-border-structural)}.border-top{border-top:1px solid var(--color-border-structural)}.border-bottom{border-bottom:1px solid var(--color-border-structural)}.border-left{border-left:1px solid var(--color-border-structural)}.border-right{border-right:1px solid var(--color-border-structural)}.border-none{border:none}.cursor-pointer{cursor:pointer}.cursor-default{cursor:default}.cursor-not-allowed{cursor:not-allowed}.cursor-wait{cursor:wait}.pointer-none{pointer-events:none}.opacity-0{opacity:0}.opacity-50{opacity:.5}.opacity-60{opacity:.6}.opacity-100{opacity:1}.select-none{user-select:none}.select-text{user-select:text}.shadow-sm{box-shadow:var(--shadow-sm)}.shadow-md{box-shadow:var(--shadow-md)}.shadow-lg{box-shadow:var(--shadow-lg)}.transition{transition:all var(--transition-base)}.transition-colors{transition:color var(--transition-base),background-color var(--transition-base),border-color var(--transition-base)}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Financial MCP — схема и сценарии</title>
+<style>
+  :root{
+    --green:#D5F0A6; --yellow:#FFF7A6; --magenta:#FC9EE8; --pink:#F2CECE;
+    --blue:#DED9FF; --orange:#F6D3B0; --red:#FE9E9F; --grey:#EDEDED;
+    --ink:#1A1A1A; --line:#1A1A1A; --muted:#6b6b6b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.45 Lato,"Segoe UI",system-ui,sans-serif;color:var(--ink);background:#fff}
+  #wrap{display:flex;align-items:flex-start}
+  main{flex:1;min-width:0;padding:22px 18px 90px 22px}
+  aside{width:430px;flex:none;position:sticky;top:0;height:100vh;overflow-y:auto;
+        border-left:2px solid #ddd;padding:18px 18px 60px;background:#fcfcfc}
 
-    /* === Page-specific styles === */
-    .sec-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--color-text-muted);
-      margin-bottom: var(--space-4);
-      padding-bottom: var(--space-2);
-      border-bottom: 1px solid var(--color-border-structural);
-    }
+  h1{font-size:26px;margin:0 0 4px;font-weight:700}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 4px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 8px}
+  .bar button,.bar select{font:inherit;padding:6px 11px;border:1.6px solid var(--line);
+        border-radius:7px;background:#fff;cursor:pointer}
+  .bar button:hover{background:#f2f2f2}
+  .hint{font-size:12.5px;color:var(--muted)}
 
-    .legend-row {
-      display: flex;
-      gap: var(--space-5);
-      flex-wrap: wrap;
-      margin-bottom: var(--space-6);
-      padding: var(--space-3) var(--space-4);
-      background: var(--color-bg-secondary);
-      border: 1px solid var(--color-border-structural);
-      border-radius: var(--radius-lg);
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      font-size: var(--text-xs);
-      color: var(--color-text-secondary);
-    }
-    .ldot {
-      width: 10px; height: 10px;
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
+  .sec{border-top:2px solid #bbb;margin-top:26px;padding-top:12px}
+  .sec h2{font-size:19px;margin:0 0 2px;font-weight:700;letter-spacing:.02em}
+  .sec .sub{margin:0 0 10px}
 
-    /* tool / resource / prompt cards */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
-    @media (max-width: 860px) { .grid-2 { grid-template-columns: 1fr; } }
+  .row{display:grid;grid-template-columns:320px 130px 400px minmax(300px,1fr);
+       gap:16px;align-items:start;padding:16px 0;border-bottom:1px dashed #e2e2e2}
+  .colhead{display:grid;grid-template-columns:320px 130px 400px minmax(300px,1fr);
+       gap:16px;margin-top:16px;font-size:17px;font-weight:700;text-align:center;color:#444}
 
-    .item-card {
-      background: var(--color-bg-card);
-      border: 1px solid var(--color-border-structural);
-      border-radius: var(--radius-xl);
-      padding: var(--space-4);
-    }
-    .item-name {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--color-text-primary);
-      margin-bottom: var(--space-2);
-    }
-    .item-params {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      margin-bottom: var(--space-3);
-      line-height: 1.7;
-    }
-    .pname { font-family: 'JetBrains Mono', monospace; color: var(--color-text-secondary); font-size: 11px; }
+  .tool{border:2.4px solid var(--line);border-radius:26px;padding:14px 12px;text-align:center;
+        font-size:16px;background:#fff;word-break:break-word}
+  .tool.pink{background:var(--pink)} .tool.grey{background:var(--grey)}
+  .note{margin-top:9px;padding:10px 12px;font-size:12px;box-shadow:2px 3px 0 rgba(0,0,0,.13)}
+  .note div{margin:1px 0}
+  .note b{display:block;margin-bottom:3px}
 
-    .note {
-      border-radius: var(--radius-md);
-      padding: var(--space-2) var(--space-3);
-      font-size: 11px;
-      color: var(--color-text-secondary);
-      margin-top: var(--space-2);
-      line-height: 1.55;
-    }
-    .n-green  { background: rgba(37,159,76,0.10);   border-left: 2px solid #259F4C; }
-    .n-yellow { background: rgba(245,165,52,0.10);  border-left: 2px solid #F5A534; }
-    .n-red    { background: rgba(249,48,60,0.10);   border-left: 2px solid #F9303C; }
-    .n-pink   { background: rgba(217,70,239,0.10);  border-left: 2px solid #D946EF; }
-    .n-blue   { background: rgba(34,151,246,0.10);  border-left: 2px solid #2297F6; }
+  .dia{border:2.4px solid var(--line);background:#fff;width:104px;height:104px;
+       transform:rotate(45deg);margin:26px auto;display:flex;align-items:center;justify-content:center}
+  .dia span{transform:rotate(-45deg);font-size:12.5px;text-align:center;line-height:1.25;width:90px}
 
-    .contract-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-3);
-    }
-    @media (max-width: 900px) { .contract-grid { grid-template-columns: 1fr 1fr; } }
+  .impl{border:2.2px solid var(--line);border-radius:9px;background:#fff;padding:11px 12px 22px;
+        margin-bottom:12px;text-align:center;font-size:14px;position:relative}
+  .impl.grey{background:var(--grey)}
+  .badges{position:absolute;right:7px;bottom:5px;display:flex;gap:4px}
+  .bdg{font-size:10.5px;padding:2px 7px;border-radius:4px;border:1.1px solid #999}
+  .bdg.unit{background:var(--blue);border-color:#8E86C9;color:#2E2A4A}
+  .bdg.hier{background:var(--orange);border-color:#C08A4E;color:#4A3520}
+  .bdg.plain{background:#e6e6e6;color:#333}
 
-    .c-card {
-      background: var(--color-bg-card);
-      border: 1px solid var(--color-border-structural);
-      border-radius: var(--radius-lg);
-      padding: var(--space-3);
-    }
-    .c-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--color-text-primary);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: var(--space-2);
-    }
-    .c-body {
-      font-size: 11px;
-      color: var(--color-text-secondary);
-      line-height: 1.6;
-    }
+  .out{padding:12px 14px 26px;margin-bottom:12px;font-size:12.8px;position:relative;
+       box-shadow:3px 4px 0 rgba(0,0,0,.13)}
+  .out b{display:block;margin-bottom:4px;font-size:13.4px}
+  .out p{margin:3px 0}
+  .green{background:var(--green)} .yellow{background:var(--yellow)}
+  .magenta{background:var(--magenta)} .redbg{background:var(--red)}
+  .tag{position:absolute;right:12px;bottom:5px;font-size:10.5px;font-weight:700;
+       background:#fff;border:1.3px solid var(--line);border-radius:4px;padding:2px 7px}
 
-    /* ── Response examples ── */
-    .ex-nav {
-      display: flex;
-      gap: var(--space-2);
-      flex-wrap: wrap;
-      margin-bottom: var(--space-4);
-    }
-    .ex-btn {
-      background: var(--color-bg-secondary);
-      border: 1px solid var(--color-border-structural);
-      border-radius: var(--radius-md);
-      color: var(--color-text-muted);
-      font-size: 11px;
-      font-family: 'JetBrains Mono', monospace;
-      padding: 4px 12px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .ex-btn:hover { border-color: #2297F6; color: #2297F6; }
-    .ex-btn.on {
-      background: rgba(34,151,246,0.12);
-      border-color: #2297F6;
-      color: #2297F6;
-      font-weight: 600;
-    }
-    .ex-panel { display: none; }
-    .ex-panel.on { display: block; }
+  .cband{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
 
-    .ex-subtitle {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--color-text-muted);
-      margin: var(--space-4) 0 var(--space-2);
-    }
-    .ex-subtitle:first-child { margin-top: 0; }
+  /* highlighting */
+  .dim{opacity:.16}
+  .hot{outline:3px solid #111;outline-offset:3px}
+  #arrows{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:5}
+  #canvas{position:relative}
+  .stepnum{fill:#111;stroke:#fff;stroke-width:2.4}
+  .stepnum-t{fill:#fff;font:700 13px Lato,sans-serif;text-anchor:middle}
 
-    /* request block */
-    .req-block {
-      background: #0f1117;
-      border: 1px solid #1e2030;
-      border-radius: var(--radius-lg);
-      padding: var(--space-3) var(--space-4);
-      margin-bottom: var(--space-3);
-    }
-    .req-label {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #3d5afe;
-      margin-bottom: var(--space-2);
-    }
-    .req-line {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: #c9d1d9;
-      line-height: 1.8;
-    }
-    .req-tool  { color: #79c0ff; font-weight: 600; }
-    .req-key   { color: #ffa657; }
-    .req-val   { color: #a5d6ff; }
-    .req-opt   { color: #6e7681; }
-
-    /* response block */
-    .res-block {
-      background: #0d0f13;
-      border: 1px solid #22272e;
-      border-radius: var(--radius-lg);
-      padding: var(--space-3) var(--space-4);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      line-height: 1.7;
-      color: #c9d1d9;
-      overflow-x: auto;
-      white-space: pre;
-    }
-    .res-block .rk   { color: #79c0ff; }   /* key */
-    .res-block .rv   { color: #a5d6ff; }   /* value string */
-    .res-block .rn   { color: #f0883e; }   /* number */
-    .res-block .rnul { color: #f85149; }   /* null */
-    .res-block .rwn  { color: #f5a534; }   /* warning */
-    .res-block .rlb  { color: #d2a8ff; }   /* cost type label */
-    .res-block .rsep { color: #444c56; }   /* separator | */
-    .res-block .rgt  { color: #7ee787; }   /* rate */
-    .res-block .rer  { color: #f85149; }   /* error */
-    .res-block .rec  { color: #f5a534; font-weight:600; } /* error code */
-
-    .ex-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-4);
-      margin-bottom: var(--space-6);
-    }
-    @media (max-width: 860px) { .ex-row { grid-template-columns: 1fr; } }
-
-    .footnote-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-3);
-      margin-top: var(--space-4);
-    }
-    @media (max-width: 860px) { .footnote-grid { grid-template-columns: 1fr; } }
-
-    .fn-item {
-      background: var(--color-bg-card);
-      border: 1px solid var(--color-border-structural);
-      border-radius: var(--radius-lg);
-      padding: var(--space-3);
-      font-size: 11px;
-      color: var(--color-text-secondary);
-      line-height: 1.6;
-    }
-    .fn-item strong {
-      color: var(--color-text-primary);
-      display: block;
-      margin-bottom: 3px;
-    }
-  </style>
+  /* right panel */
+  aside h3{margin:0 0 3px;font-size:18px}
+  .q{background:var(--yellow);border:1.8px solid var(--line);border-radius:8px;
+     padding:11px 12px;font-size:14px;font-weight:700;margin:12px 0}
+  .step{border:1.6px solid var(--line);border-radius:8px;padding:9px 11px;margin-bottom:9px;font-size:12.6px}
+  .step .n{display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;
+     background:#111;color:#fff;border-radius:50%;font-weight:700;font-size:12px;margin-right:7px}
+  .step b{font-size:13.2px}
+  .step p{margin:5px 0 0;color:#333}
+  .ans{border:1.8px solid var(--line);border-radius:8px;padding:11px 12px;font-size:12.8px;margin-top:14px}
+  .ans b{display:block;margin-bottom:5px;font-size:13.6px}
+  .also{font-size:12.4px;color:#444;margin:12px 0 0}
+  .also b{display:block;margin-bottom:4px;color:#111}
+  .also span{display:inline-block;background:#fff;border:1.2px solid #999;border-radius:4px;
+     padding:2px 7px;margin:2px 3px 2px 0;cursor:pointer;font-size:11.6px}
+  .also span:hover{background:#f0f0f0;border-color:#111}
+  .legend{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.7}
+  .legend i{font-style:normal;display:inline-block;width:52px;text-align:center;
+     border-radius:4px;border:1px solid #999;font-size:10.5px;margin-right:5px}
+  [contenteditable]:focus{outline:2px solid #4A9BD8;outline-offset:2px;background:#fff}
+  @media print{aside{display:none} .dim{opacity:1}}
+  /* examples */
+  .ex-tool-hd{font-size:14px;font-weight:700;padding:5px 10px;background:#f4f4f4;
+    border-left:4px solid #999;border-radius:0 6px 6px 0;margin:18px 0 8px;color:#333}
+  .ex-case{margin-bottom:14px}
+  .ex-case-lbl{font-size:11.5px;color:var(--muted);font-style:italic;margin-bottom:6px}
+  .ex-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+  .ex-block{border:1.8px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:2px}
+  .ex-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    padding:3px 10px;background:#ebebeb;border-bottom:1.5px solid #ccc;color:#555}
+  .ex-pre{font:11.5px/1.55 "Cascadia Code","Fira Code",Consolas,monospace;
+    white-space:pre;padding:9px 12px;margin:0;overflow-x:auto;display:block}
+  .ex-req .ex-pre{background:#eef2ff}
+  .ex-res-ok .ex-pre{background:var(--green)}
+  .ex-res-warn .ex-pre{background:var(--yellow)}
+  .ex-res-err .ex-pre{background:var(--red)}
+  .ex-err-tbl{display:grid;gap:7px;padding:8px 0}
+  .ex-err-row{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+  .ex-err-code{font:700 12px Lato,sans-serif;min-width:170px;color:#111;padding-top:4px}
+  .ex-err-val{font:11.5px/1.4 "Cascadia Code","Fira Code",Consolas,monospace;
+    display:inline-block;background:var(--red);border-radius:5px;padding:3px 9px;
+    border:1px solid #e0a0a0}
+  @media(max-width:1000px){.ex-pair{grid-template-columns:1fr}}
+  /* ---- use cases ---- */
+  .uc-section{margin-top:32px}
+  .uc-section-hd{font-size:17px;font-weight:700;margin:0 0 16px;padding:8px 16px;
+    background:linear-gradient(90deg,#f0f0f0,#fafafa);border-left:5px solid #555;
+    border-radius:0 8px 8px 0}
+  .uc-group-hd{font-size:13.5px;font-weight:700;padding:5px 12px;background:#e8e8e8;
+    border-left:4px solid #888;border-radius:0 6px 6px 0;margin:20px 0 9px;color:#333}
+  .uc-card{border:2px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px}
+  .uc-card-hd{display:flex;align-items:center;gap:10px;padding:7px 14px;background:#f7f7f7;
+    border-bottom:1.5px solid #ddd}
+  .uc-sc{font:700 11px Lato,sans-serif;min-width:38px;text-align:center;padding:2px 6px;
+    border-radius:4px;border:1.5px solid #999;background:#fff;white-space:nowrap}
+  .uc-title{font:700 13px Lato,sans-serif;flex:1}
+  .uc-tag{font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid #aaa;color:#555;white-space:nowrap}
+  .uc-tag.ok{background:var(--green);border-color:#8ab860}
+  .uc-tag.boundary{background:var(--yellow);border-color:#c8b800}
+  .uc-tag.nope{background:var(--red);border-color:#d08080}
+  .uc-tag.compose{background:var(--blue);border-color:#8880cc}
+  .uc-flow{display:grid;gap:0;overflow-x:auto;padding:10px 12px}
+  .uc-flow.steps-4{grid-template-columns:1fr 24px 1fr 24px 1fr 24px 1fr}
+  .uc-flow.steps-3{grid-template-columns:1fr 24px 1fr 24px 1fr}
+  .uc-flow.steps-2{grid-template-columns:1fr 24px 1fr}
+  .uc-arrow{display:flex;align-items:center;justify-content:center;font-size:16px;
+    color:#aaa;padding-top:24px}
+  .uc-step{padding:8px 10px}
+  .uc-step-hd{font:700 9px Lato,sans-serif;text-transform:uppercase;letter-spacing:.07em;
+    color:#888;margin-bottom:4px}
+  .uc-step-body{font:11px/1.5 "Cascadia Code","Fira Code",Consolas,monospace;
+    white-space:pre-wrap;word-break:break-word;border-radius:6px;padding:6px 8px}
+  .uc-step.user .uc-step-body{background:#eef2ff;font:12.5px/1.45 Lato,"Segoe UI",sans-serif;
+    white-space:normal;font-style:italic}
+  .uc-step.tool .uc-step-body{background:#f0eeff}
+  .uc-step.raw .uc-step-body{background:var(--green)}
+  .uc-step.raw.warn .uc-step-body{background:var(--yellow)}
+  .uc-step.raw.err .uc-step-body{background:var(--red)}
+  .uc-step.raw.info .uc-step-body{background:#eef2ff}
+  .uc-step.answer .uc-step-body{background:#f5fff0;font:12px/1.5 Lato,"Segoe UI",sans-serif;white-space:normal}
+  .uc-note{font-size:11.5px;color:var(--muted);padding:5px 14px 9px;border-top:1px dashed #ddd;
+    background:#fafafa;font-style:italic}
+  @media(max-width:1100px){
+    .uc-flow.steps-4,.uc-flow.steps-3{grid-template-columns:1fr}
+    .uc-arrow{padding-top:0;font-size:14px;transform:rotate(90deg)}
+  }
+</style>
 </head>
-<body class="p-6">
-<div class="container" style="max-width:1160px;">
-
-  <!-- ── Header ─────────────────────────────────────────── -->
-  <div style="margin-bottom:var(--space-6);">
-    <h1 style="margin-bottom:var(--space-2);">Financial MCP — canonical surface</h1>
-    <p class="text-muted" style="max-width:720px;line-height:1.6;margin-bottom:var(--space-4);">
-      Four tools, two resources, two prompts. Tools are data-access primitives only.
-      Orchestration lives in Prompts. Static reference data lives in Resources.
-    </p>
-    <div class="legend-row">
-      <div class="legend-item"><span class="ldot" style="background:#259F4C;"></span>Green = works</div>
-      <div class="legend-item"><span class="ldot" style="background:#D946EF;"></span>Magenta = not supported</div>
-      <div class="legend-item"><span class="ldot" style="background:#F5A534;"></span>Yellow = must be in payload</div>
-      <div class="legend-item"><span class="ldot" style="background:#F9303C;"></span>Red = open decision</div>
-      <div class="legend-item"><span class="ldot" style="background:#2297F6;border-radius:2px;"></span>Unit = own record only</div>
-      <div class="legend-item"><span class="ldot" style="background:#2297F6;opacity:.45;border-radius:2px;"></span>Hierarchy = rolls up children</div>
-      <div class="legend-item"><span class="ldot" style="background:var(--color-text-muted);border-radius:2px;"></span>no unit param</div>
-      <div class="legend-item"><span class="ldot" style="background:#C084FC;border-radius:2px;"></span>composition</div>
+<body>
+<div id="wrap">
+  <main>
+    <h1 contenteditable data-k="hdr.title">Financial MCP — каноническая поверхность</h1>
+    <p class="sub" contenteditable data-k="hdr.sub">Четыре тула, два ресурса, два промпта. Зелёный — работает. Магента — не поддерживается. Жёлтый — то, что обязано попасть в payload или в ответ. Красный — открытое решение.</p>
+    <div class="bar">
+      <label class="hint">Сценарий:</label>
+      <select id="pick"></select>
+      <button id="clear">Показать всё</button>
+      <button id="save">Сохранить копию</button>
+      <span class="hint">Любой текст правится по клику. «Сохранить копию» скачает файл с вашими правками.</span>
     </div>
-  </div>
-
-  <!-- ── 1 · TOOLS ────────────────────────────────────────── -->
-  <div class="sec-label" style="margin-top:var(--space-2);">1 · TOOLS — Model-invoked, parameterized, read-only. Data-access primitives only.</div>
-
-  <div class="grid-2" style="margin-bottom:var(--space-6);">
-
-    <div class="item-card">
-      <div class="item-name">get_financial_attributes</div>
-      <div class="item-params">
-        <span class="pname">unit</span> (required) · <span class="pname">readOnlyHint: true</span>
-      </div>
-      <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:var(--space-2);">
-        Per Unit Type — Project: Unit &amp; Hierarchy · Stream: Hierarchy · Customer/Program: Hierarchy
-      </div>
-      <div class="note n-green">
-        <strong>1. Annual budget for a unit.</strong>
-        <code style="font-size:10px;">static{}</code>: IT Gross Spent YTD (A), IT Gross Spend BOY (F), IT Gross Spend (A+F), Gross Investment Current CBA — keyed by Planview Work ID.
-        <code style="font-size:10px;">dynamic{}</code>: yearActuals, yearForecast — aggregated.
-      </div>
-      <div class="note n-yellow">
-        <strong>*16. aggregated:false must be in the payload.</strong>
-        <code style="font-size:10px;">static{}</code> is NOT rolled up child→parent; <code style="font-size:10px;">dynamic{}</code> is. Ship the flag so the model can explain the gap.
-      </div>
-      <div class="note n-yellow"><code style="font-size:10px;">static{}</code> is null on a Stream. Return null, never 0 — and say which block is empty.</div>
-      <div class="note n-pink"><strong>UNIT_NOT_SUPPORTED</strong> — same root cause as get_health_data / get_unit_risks.</div>
+    <div id="canvas">
+      <svg id="arrows"></svg>
+      <div class="colhead"><div>Primitive</div><div></div><div>Resolution</div><div>Result / contract notes</div></div>
+      <div id="schema"></div>
     </div>
-
-    <div class="item-card">
-      <div class="item-name">get_unit_costs</div>
-      <div class="item-params">
-        <span class="pname">unit</span> (required) ·
-        <span class="pname">from</span> YYYY-MM ·
-        <span class="pname">to</span> YYYY-MM ·
-        <span class="pname">breakdown</span>: labor | other | both ·
-        <span class="pname">granularity</span>: month | cumulative
-      </div>
-      <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:var(--space-2);">
-        Merged: was get_labor_cost + get_other_costs. Stream/Project: Unit+Hierarchy · Customer/Program: Hierarchy
-      </div>
-      <div class="note n-green">
-        <strong>5–9. Unit costs.</strong>
-        labor[]: per month/role/person = Hourly Rate × Workload × Working Hours.
-        other[]: Cost Type incl. parent path, amount, comment.
-        cumulative{}: past, current, forecast — per breakdown.
-      </div>
-      <div class="note n-yellow"><strong>warnings[] is mandatory.</strong> Unmapped positions contribute 0. Return <code style="font-size:10px;">unmappedPositions: n</code>.</div>
-      <div class="note n-pink"><strong>UNIT_NOT_SUPPORTED</strong> — Resource Plan documented only down to account level.</div>
+  </main>
+  <aside>
+    <h3 id="p-title">Сценарий не выбран</h3>
+    <p class="sub" id="p-sub">Выберите сценарий сверху — на схеме подсветится путь, здесь появятся шаги и итоговый ответ.</p>
+    <div id="panel"></div>
+    <div class="legend">
+      <div><i class="bdg unit">Unit</i> только своя запись юнита</div>
+      <div><i class="bdg hier">Hierarchy</i> включает и подкатывает детей</div>
+      <div><i class="bdg plain">no unit</i> не привязано к юниту</div>
+      <div><i class="bdg plain">comp</i> вызывает другие примитивы</div>
     </div>
-
-    <div class="item-card">
-      <div class="item-name">get_rate_card</div>
-      <div class="item-params">
-        <span class="pname">vendor</span> ·
-        <span class="pname">rateCardType</span> ·
-        <span class="pname">role</span> ·
-        <span class="pname">location</span> ·
-        <span class="pname">country</span> ·
-        <span class="pname">city</span> ·
-        <span class="pname">effectiveDate</span>
-        <br><em style="color:var(--color-text-muted);">all optional filters</em>
-      </div>
-      <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:var(--space-2);">Not unit-scoped — org-level access is an authorization check, not a level.</div>
-      <div class="note n-green"><strong>3. Rate card lookup — READ ONLY.</strong> Returns every match with hourly rate and effective period. Never collapse to one — Rate Card Type and Vendor change the number.</div>
-      <div class="note n-yellow"><strong>*15. No write tool, on purpose.</strong> Rate Cards are editable in DC by a Rates Editor. The tool must direct the user there.</div>
-    </div>
-
-    <div class="item-card" style="opacity:.7;border-style:dashed;">
-      <div class="item-name" style="color:var(--color-text-muted);">get_working_hours_calendar</div>
-      <div class="item-params">
-        <span class="pname">year</span> (required) ·
-        <span class="pname">country</span> ·
-        <span class="pname">vendor</span>
-      </div>
-      <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:var(--space-2);">Not unit-scoped — kept separate from get_rate_card to avoid disjoint required-param confusion.</div>
-      <div class="note n-green">
-        <strong>4. Working hours calendar.</strong>
-        hours + resolvedFrom: vendor+country | country | organizational | systemDefault. Always report which level answered.
-      </div>
-      <div class="note n-red"><strong>Open decision:</strong> This resource does not exist in DC docs today — it is what the canonical shape needs.</div>
-    </div>
-  </div>
-
-  <!-- ── 2 · RESOURCES ──────────────────────────────────── -->
-  <div class="sec-label">2 · RESOURCES — Client-attached context. Small, stable, cacheable — read once, reused by every answer.</div>
-
-  <div class="grid-2" style="margin-bottom:var(--space-6);">
-    <div class="item-card">
-      <div class="item-name" style="color:#2297F6;">dc://dictionaries/cost-types</div>
-      <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:var(--space-2);">No params · URI-addressed · cacheable — Cost Category / Cost Type list</div>
-      <div class="note n-green">Correct category naming for free. Lets the model use exact configured labels instead of inventing them. Underpins *11 (what is out of scope).</div>
-      <div class="note n-blue">Fixed, tiny, needed by nearly every financial answer. A tool call per question would be wasted round-trips.</div>
-    </div>
-    <div class="item-card">
-      <div class="item-name" style="color:#2297F6;">dc://units/{unit}/hierarchy</div>
-      <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:var(--space-2);">URI template · param: unit · cacheable — Unit type + parents + children</div>
-      <div class="note n-green">Prevents the unsupported call. The model learns the unit type before calling, so it can say "not supported at Portfolio level" without a failed round-trip.</div>
-      <div class="note n-red"><strong>Design proposal.</strong> This resource does not exist in DC docs today.</div>
-    </div>
-  </div>
-
-  <!-- ── 3 · PROMPTS ────────────────────────────────────── -->
-  <div class="sec-label">3 · PROMPTS — User-invoked templates. Orchestration belongs here — never inside a tool.</div>
-
-  <div class="grid-2" style="margin-bottom:var(--space-6);">
-    <div class="item-card">
-      <div class="item-name" style="color:#C084FC;">compare_forecast_vs_actuals</div>
-      <div class="item-params">args: <span class="pname">unit</span>, <span class="pname">period</span> · composition: get_unit_costs + get_financial_attributes</div>
-      <div class="note n-green"><strong>17. Compare RP forecast vs PV actuals.</strong> The template carries the three caveats: different breakdowns, different freshness, unmapped positions.</div>
-      <div class="note n-yellow">Planview side can only be annual static totals. The comparison is annual, not month-by-month.</div>
-    </div>
-    <div class="item-card">
-      <div class="item-name" style="color:#C084FC;">budget_review</div>
-      <div class="item-params">args: <span class="pname">unit</span>, <span class="pname">period</span> · composition: get_health_data + get_unit_risks + get_unit_costs</div>
-      <div class="note n-green">QBR / steering-committee prep. Each section keeps its own "as of" marker, since the feeds refresh on different schedules.</div>
-    </div>
-  </div>
-
-  <!-- ── 4 · RESPONSE & ERROR CONTRACT ─────────────────── -->
-  <div class="sec-label">4 · RESPONSE &amp; ERROR CONTRACT — Applies to every primitive above.</div>
-
-  <div class="contract-grid" style="margin-bottom:var(--space-6);">
-    <div class="c-card">
-      <div class="c-title">Typed nulls, never 0</div>
-      <div class="c-body">Missing data returns <code style="font-size:10px;">null</code> with a reason. Annual-feed blank→0 coercion happens upstream — label it as coerced, not a reported figure.</div>
-    </div>
-    <div class="c-card">
-      <div class="c-title">Provenance on every response</div>
-      <div class="c-body">source feed + <code style="font-size:10px;">lastSyncedAt</code> per block. Monthly and Annual sync independently — one response can mix two freshness dates.</div>
-    </div>
-    <div class="c-card">
-      <div class="c-title">Semantic errors, not empty results</div>
-      <div class="c-body"><code style="font-size:10px;">PERMISSION_DENIED</code> — name the missing role<br><code style="font-size:10px;">UNIT_NOT_SUPPORTED</code><br><code style="font-size:10px;">NO_DATA · OUT_OF_SCOPE · STALE</code><br>An empty array that reads as zero is the main risk.</div>
-    </div>
-    <div class="c-card">
-      <div class="c-title">readOnlyHint on all tools</div>
-      <div class="c-body">No write tools. Rate Cards and Other Costs are editable in DC — the tool names the screen and the role instead (*15).</div>
-    </div>
-    <div class="c-card">
-      <div class="c-title">Explicit currency and unit</div>
-      <div class="c-body">Every amount carries CAD. Every hours value carries its fallback level. *11: non-IT categories return <code style="font-size:10px;">OUT_OF_SCOPE</code>, never an approximation.</div>
-    </div>
-    <div class="c-card">
-      <div class="c-title">Still not answerable</div>
-      <div class="c-body">*12 freshness and *14 import-failure diagnosis need PV agent job status/logs — not exposed. *13 is handled by the null contract, not by a tool.</div>
-    </div>
-  </div>
-
-  <!-- ── 5 · RESPONSE FORMAT EXAMPLES ──────────────────── -->
-  <div class="sec-label">5 · REQUEST / RESPONSE EXAMPLES — All tools return plain text; MCP wraps it in TextContent.</div>
-
-  <div class="card">
-    <div class="card-body">
-
-      <div class="ex-nav" id="exNav">
-        <button class="ex-btn on" data-t="fa">get_financial_attributes</button>
-        <button class="ex-btn" data-t="uc-month">get_unit_costs · month</button>
-        <button class="ex-btn" data-t="uc-cum">get_unit_costs · cumulative</button>
-        <button class="ex-btn" data-t="rc">get_rate_card</button>
-        <button class="ex-btn" data-t="err">errors</button>
-      </div>
-
-      <!-- ─ get_financial_attributes ─────────────────── -->
-      <div class="ex-panel on" id="p-fa">
-
-        <div class="ex-subtitle">Request</div>
-        <div class="req-block">
-          <div class="req-label">tool call</div>
-          <div class="req-line">
-            <span class="req-tool">get_financial_attributes</span>
-            <span class="req-key">unit</span>=<span class="req-val">"002343_v1"</span>
-          </div>
-        </div>
-
-        <div class="ex-subtitle">Response — unit with data</div>
-        <div class="res-block"><span class="rk">unit</span>: <span class="rv">002343_v1</span>
-<span class="rk">aggregated</span>: <span class="rv">false</span>
-<span class="rk">currency</span>: <span class="rv">CAD</span>
-<span class="rk">IT Gross Spent YTD</span>: <span class="rn">1250000.00</span>
-<span class="rk">IT Gross Spend BOY</span>: <span class="rn">2400000.00</span>
-<span class="rk">IT Gross Spend (A+F)</span>: <span class="rn">1850000.00</span>
-<span class="rk">Gross Investment Current CBA</span>: <span class="rn">3100000.00</span></div>
-
-        <div class="ex-subtitle" style="margin-top:var(--space-5);">Request — Stream unit or missing PV Work ID</div>
-        <div class="req-block">
-          <div class="req-label">tool call</div>
-          <div class="req-line">
-            <span class="req-tool">get_financial_attributes</span>
-            <span class="req-key">unit</span>=<span class="req-val">"034233"</span>
-          </div>
-        </div>
-
-        <div class="ex-subtitle">Response — null variant</div>
-        <div class="res-block"><span class="rk">unit</span>: <span class="rv">034233</span>
-<span class="rk">aggregated</span>: <span class="rv">false</span>
-<span class="rk">currency</span>: <span class="rv">CAD</span>
-<span class="rk">IT Gross Spent YTD</span>: <span class="rnul">null</span>
-<span class="rk">IT Gross Spend BOY</span>: <span class="rnul">null</span>
-<span class="rk">IT Gross Spend (A+F)</span>: <span class="rnul">null</span>
-<span class="rk">Gross Investment Current CBA</span>: <span class="rnul">null</span></div>
-
-        <div class="footnote-grid">
-          <div class="fn-item">
-            <strong>aggregated: false — always present</strong>
-            <code style="font-size:10px;">static{}</code> is NOT rolled up child→parent; <code style="font-size:10px;">dynamic{}</code> is. The flag lets the model explain the gap rather than guessing.
-          </div>
-          <div class="fn-item">
-            <strong>null vs 0</strong>
-            Null attribute values render as the literal string <code style="font-size:10px;">null</code> — never 0. A null means the DC attribute is absent; 0 means a reported zero spend.
-          </div>
-          <div class="fn-item">
-            <strong>Monetary format</strong>
-            All values formatted as <code style="font-size:10px;">%.2f</code> (two decimal places). Currency is always <code style="font-size:10px;">CAD</code>.
-          </div>
-          <div class="fn-item">
-            <strong>Label mapping</strong>
-            IT_GROSS_SPENT_YTD → "IT Gross Spent YTD" · IT_GROSS_SPEND_BOY → "IT Gross Spend BOY" · IT_GROSS_SPEND_TOTAL → "IT Gross Spend (A+F)" · GROSS_INVESTMENT_CBA → "Gross Investment Current CBA"
-          </div>
-        </div>
-      </div>
-
-      <!-- ─ get_unit_costs (month) ───────────────────── -->
-      <div class="ex-panel" id="p-uc-month">
-
-        <div class="ex-subtitle">Request</div>
-        <div class="req-block">
-          <div class="req-label">tool call</div>
-          <div class="req-line">
-            <span class="req-tool">get_unit_costs</span>
-            <span class="req-key">unit</span>=<span class="req-val">"002343_v1"</span>
-            <span class="req-key">from</span>=<span class="req-val">"2026-01"</span>
-            <span class="req-key">to</span>=<span class="req-val">"2026-06"</span>
-            <span class="req-opt">breakdown=<span class="req-val">"both"</span> (default)</span>
-            <span class="req-opt">granularity=<span class="req-val">"month"</span> (default)</span>
-          </div>
-        </div>
-
-        <div class="ex-subtitle">Response</div>
-        <div class="res-block"><span class="rk">unit</span>: <span class="rv">002343_v1</span>
-<span class="rk">period</span>: <span class="rv">2026-01</span> to <span class="rv">2026-06</span>
-<span class="rk">currency</span>: <span class="rv">CAD</span>
-<span class="rk">granularity</span>: <span class="rv">month</span>
-<span class="rwn">warnings:
-  - unmappedPositions: 3</span>
-
-<span class="rlb">Labor Costs:</span>
-  <span class="rk">monthly:</span>
-    <span class="rv">2026-01</span> <span class="rsep">|</span> forecast: <span class="rn">85000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">82400.00</span> CAD <span class="rsep">|</span> variance: <span class="rn">-2600.00</span> CAD
-    <span class="rv">2026-02</span> <span class="rsep">|</span> forecast: <span class="rn">85000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">79100.00</span> CAD <span class="rsep">|</span> variance: <span class="rn">-5900.00</span> CAD
-    <span class="rv">2026-03</span> <span class="rsep">|</span> forecast: <span class="rn">90000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">91200.00</span> CAD <span class="rsep">|</span> variance: <span class="rn">1200.00</span> CAD
-  <span class="rk">year totals:</span>
-    <span class="rv">2026</span> <span class="rsep">|</span> forecast: <span class="rn">510000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">252700.00</span> CAD <span class="rsep">|</span> total: <span class="rn">762700.00</span> CAD
-
-<span class="rlb">Other Costs:</span>
-  <span class="rk">monthly:</span>
-    <span class="rv">2026-01</span> <span class="rsep">|</span> forecast: <span class="rn">12000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">11500.00</span> CAD <span class="rsep">|</span> variance: <span class="rn">-500.00</span> CAD
-    <span class="rv">2026-02</span> <span class="rsep">|</span> forecast: <span class="rn">12000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">13200.00</span> CAD <span class="rsep">|</span> variance: <span class="rn">1200.00</span> CAD
-    <span class="rv">2026-03</span> <span class="rsep">|</span> forecast: <span class="rn">12000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">12000.00</span> CAD <span class="rsep">|</span> variance: <span class="rn">0.00</span> CAD
-  <span class="rk">year totals:</span>
-    <span class="rv">2026</span> <span class="rsep">|</span> forecast: <span class="rn">72000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">36700.00</span> CAD <span class="rsep">|</span> total: <span class="rn">108700.00</span> CAD</div>
-
-        <div class="footnote-grid">
-          <div class="fn-item">
-            <strong>warnings block</strong>
-            Appears only when unmapped positions exist. Omitted when count is 0. Without it a lower-than-expected total reads as a saving.
-          </div>
-          <div class="fn-item">
-            <strong>Cost type labels</strong>
-            Come from <code style="font-size:10px;">CostTypeModel.name</code> via DC API — match exactly what the user sees in Delivery Central.
-          </div>
-          <div class="fn-item">
-            <strong>year totals block</strong>
-            Always appended per cost type. <code style="font-size:10px;">total</code> = forecast + actual (full-year combined, mixing realized and planned).
-          </div>
-          <div class="fn-item">
-            <strong>breakdown filter</strong>
-            Resolved by matching <code style="font-size:10px;">CostTypeModel.name</code> against labor/staff/resource keywords. <code style="font-size:10px;">both</code> includes all groups.
-          </div>
-        </div>
-      </div>
-
-      <!-- ─ get_unit_costs (cumulative) ─────────────── -->
-      <div class="ex-panel" id="p-uc-cum">
-
-        <div class="ex-subtitle">Request</div>
-        <div class="req-block">
-          <div class="req-label">tool call</div>
-          <div class="req-line">
-            <span class="req-tool">get_unit_costs</span>
-            <span class="req-key">unit</span>=<span class="req-val">"002343_v1"</span>
-            <span class="req-key">from</span>=<span class="req-val">"2026-01"</span>
-            <span class="req-key">to</span>=<span class="req-val">"2026-03"</span>
-            <span class="req-key">breakdown</span>=<span class="req-val">"labor"</span>
-            <span class="req-key">granularity</span>=<span class="req-val">"cumulative"</span>
-          </div>
-        </div>
-
-        <div class="ex-subtitle">Response</div>
-        <div class="res-block"><span class="rk">unit</span>: <span class="rv">002343_v1</span>
-<span class="rk">period</span>: <span class="rv">2026-01</span> to <span class="rv">2026-03</span>
-<span class="rk">currency</span>: <span class="rv">CAD</span>
-<span class="rk">granularity</span>: <span class="rv">cumulative</span>
-
-<span class="rlb">Labor Costs:</span>
-  <span class="rk">cumulative:</span>
-    <span class="rv">2026-01</span> <span class="rsep">|</span> forecast: <span class="rn">85000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">82400.00</span> CAD <span class="rsep">|</span> variance: <span class="rn">-2600.00</span> CAD
-    <span class="rv">2026-02</span> <span class="rsep">|</span> forecast: <span class="rn">170000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">161500.00</span> CAD <span class="rsep">|</span> variance: <span class="rn">-8500.00</span> CAD
-    <span class="rv">2026-03</span> <span class="rsep">|</span> forecast: <span class="rn">260000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">252700.00</span> CAD <span class="rsep">|</span> variance: <span class="rn">-7300.00</span> CAD
-  <span class="rk">year totals:</span>
-    <span class="rv">2026</span> <span class="rsep">|</span> forecast: <span class="rn">510000.00</span> CAD <span class="rsep">|</span> actual: <span class="rn">252700.00</span> CAD <span class="rsep">|</span> total: <span class="rn">762700.00</span> CAD</div>
-
-        <div class="footnote-grid">
-          <div class="fn-item">
-            <strong>cumulative mode</strong>
-            Each row is a running sum from <code style="font-size:10px;">from</code>. Row N = sum of rows 1…N in monthly mode.
-          </div>
-          <div class="fn-item">
-            <strong>Sub-label change</strong>
-            <code style="font-size:10px;">granularity=month</code> → sub-label is <code style="font-size:10px;">monthly:</code>. <code style="font-size:10px;">granularity=cumulative</code> → sub-label is <code style="font-size:10px;">cumulative:</code>.
-          </div>
-          <div class="fn-item">
-            <strong>year totals always present</strong>
-            Reflects full-year aggregation from DC — not a running sum; it is the same regardless of granularity mode.
-          </div>
-          <div class="fn-item">
-            <strong>No warnings block here</strong>
-            warnings block is omitted when <code style="font-size:10px;">unmappedPositions == 0</code>.
-          </div>
-        </div>
-      </div>
-
-      <!-- ─ get_rate_card ───────────────────────────── -->
-      <div class="ex-panel" id="p-rc">
-
-        <div class="ex-subtitle">Request — with filters</div>
-        <div class="req-block">
-          <div class="req-label">tool call</div>
-          <div class="req-line">
-            <span class="req-tool">get_rate_card</span>
-            <span class="req-key">vendor</span>=<span class="req-val">"EPAM"</span>
-            <span class="req-key">role</span>=<span class="req-val">"Senior Software"</span>
-            <span class="req-opt">location, rateCardType — omitted (match all)</span>
-          </div>
-        </div>
-
-        <div class="ex-subtitle">Response</div>
-        <div class="res-block"><span class="rk">rate cards</span> (2):
-
-  <span class="rlb">vendor</span>: <span class="rv">EPAM Systems</span> <span class="rsep">|</span> <span class="rlb">location</span>: <span class="rv">Nearshore</span> <span class="rsep">|</span> <span class="rlb">role</span>: <span class="rv">Senior Software Engineer</span> <span class="rsep">|</span> <span class="rlb">type</span>: <span class="rv">Standard</span>
-    <span class="rgt">rate</span>: <span class="rn">95.00</span> CAD/hr from <span class="rv">Mon Jan 01 00:00:00 UTC 2026</span> to <span class="rv">Mon Dec 31 00:00:00 UTC 2026</span>
-
-  <span class="rlb">vendor</span>: <span class="rv">EPAM Systems</span> <span class="rsep">|</span> <span class="rlb">location</span>: <span class="rv">Offshore</span> <span class="rsep">|</span> <span class="rlb">role</span>: <span class="rv">Senior Software Engineer</span> <span class="rsep">|</span> <span class="rlb">type</span>: <span class="rv">Standard</span>
-    <span class="rgt">rate</span>: <span class="rn">75.00</span> CAD/hr from <span class="rv">Mon Jan 01 00:00:00 UTC 2026</span> to <span class="rv">Mon Dec 31 00:00:00 UTC 2026</span></div>
-
-        <div class="ex-subtitle" style="margin-top:var(--space-5);">Request — no filters</div>
-        <div class="req-block">
-          <div class="req-label">tool call</div>
-          <div class="req-line">
-            <span class="req-tool">get_rate_card</span>
-            <span class="req-opt">(all params omitted — returns every active rate card)</span>
-          </div>
-        </div>
-
-        <div class="ex-subtitle">Response — no matches</div>
-        <div class="res-block"><span class="rk">rate cards</span> (0):</div>
-
-        <div class="footnote-grid">
-          <div class="fn-item">
-            <strong>Date format — Java Date.toString()</strong>
-            Effective dates use Java's default format: <code style="font-size:10px;">EEE MMM dd HH:mm:ss zzz yyyy</code> e.g. <code style="font-size:10px;">Mon Jan 01 00:00:00 UTC 2026</code>.
-          </div>
-          <div class="fn-item">
-            <strong>Never collapse to one</strong>
-            Rate Card Type and Vendor independently change the rate. Every matching combination is a separate entry.
-          </div>
-          <div class="fn-item">
-            <strong>Filtering</strong>
-            Case-insensitive partial-match on each param. Omit any to skip that filter.
-          </div>
-          <div class="fn-item">
-            <strong>active == true only</strong>
-            Inactive rate cards are silently excluded. No warning emitted for them.
-          </div>
-        </div>
-      </div>
-
-      <!-- ─ errors ──────────────────────────────────── -->
-      <div class="ex-panel" id="p-err">
-
-        <div class="ex-subtitle">Validation errors — tool layer, before service is called</div>
-        <div class="res-block"><span class="rer">error</span>: <span class="rec">VALIDATION</span> — unitId must not be blank.
-<span class="rer">error</span>: <span class="rec">VALIDATION</span> — invalid 'from' date format. Expected YYYY-MM, got: 2026/01
-<span class="rer">error</span>: <span class="rec">VALIDATION</span> — invalid 'to' date format. Expected YYYY-MM, got: jan-2026
-<span class="rer">error</span>: <span class="rec">VALIDATION</span> — breakdown must be 'labor', 'other', or 'both'.
-<span class="rer">error</span>: <span class="rec">VALIDATION</span> — granularity must be 'month' or 'cumulative'.</div>
-
-        <div class="ex-subtitle" style="margin-top:var(--space-4);">Semantic errors — service layer</div>
-        <div class="res-block"><span class="rer">error</span>: <span class="rec">NO_DATA</span> — no budget data found for unit 002343_v1 in period 2026-01 to 2026-06.
-<span class="rer">error</span>: <span class="rec">UNIT_NOT_SUPPORTED</span> — unit type PORTFOLIO is not supported by this tool.
-<span class="rer">error</span>: <span class="rec">PERMISSION_DENIED</span> — missing role: FINANCE_VIEWER.
-<span class="rer">error</span>: <span class="rec">SERVICE_UNAVAILABLE</span> — downstream DC API returned 503.
-<span class="rer">error</span>: <span class="rec">STALE</span> — last sync was more than 24 hours ago.
-<span class="rer">error</span>: <span class="rec">OUT_OF_SCOPE</span> — cost category 'Marketing' is not an IT category.</div>
-
-        <div class="footnote-grid">
-          <div class="fn-item">
-            <strong>Error format</strong>
-            Always: <code style="font-size:10px;">error: &lt;CODE&gt; — &lt;message&gt;</code>. Code is machine-readable; message is model-readable.
-          </div>
-          <div class="fn-item">
-            <strong>Validation is pre-service</strong>
-            VALIDATION errors return from <code style="font-size:10px;">FinancialMcpTools</code> before the service is called — format mismatches and blank IDs never reach the DC API.
-          </div>
-          <div class="fn-item">
-            <strong>Never an empty array for errors</strong>
-            <code style="font-size:10px;">rate cards (0)</code> is valid only when the query succeeds with no matches. Error states always produce a typed error string.
-          </div>
-          <div class="fn-item">
-            <strong>UNIT_NOT_SUPPORTED</strong>
-            Returned when DC cannot resolve the unit or the unit type is unsupported. Same root cause as get_health_data / get_unit_risks limitations.
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /card-body -->
-  </div><!-- /card -->
-
-  <!-- Footer -->
-  <div style="margin-top:var(--space-6);padding-top:var(--space-3);border-top:1px solid var(--color-border-structural);font-size:11px;color:var(--color-text-muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-    <span>Financial MCP — Canonical Surface · PS PlanView Integrator · EPAM Systems</span>
-    <span>Spring AI 2.0.0 · Section 5 reflects actual FinancialMcpService response format</span>
-  </div>
-
-</div><!-- /container -->
+  </aside>
+</div>
 
 <script>
-  document.getElementById('exNav').addEventListener('click', function(e) {
-    const btn = e.target.closest('.ex-btn');
-    if (!btn) return;
-    document.querySelectorAll('.ex-btn').forEach(b => b.classList.remove('on'));
-    document.querySelectorAll('.ex-panel').forEach(p => p.classList.remove('on'));
-    btn.classList.add('on');
-    document.getElementById('p-' + btn.dataset.t).classList.add('on');
+/* ============================ ДАННЫЕ СХЕМЫ ============================ */
+const U=["Unit","unit"], H=["Hierarchy","hier"], NU=["no unit param","plain"], CP=["composition","plain"], CA=["cacheable","plain"];
+
+const SECTIONS=[
+{id:"tools",title:"1 · TOOLS",sub:"Model-invoked, parameterized, read-only. Примитивы доступа к данным — никаких воркфлоу.",rows:[
+ {id:"fa",tool:"get_financial_attributes",
+  params:["params:","– unit (required)","annotations:","– readOnlyHint: true"],
+  dia:"Per Unit Type",
+  impl:[{id:"fa1",label:"Standalone Project / Delivery Program",b:[U,H]},
+        {id:"fa2",label:"Child Project / Pod / Squad",b:[H]},
+        {id:"fa3",label:"Portfolio Group / Program",b:[H]},
+        {id:"fa4",label:"Corporate Function / ORGANIZATION",b:[H]}],
+  out:[
+   {id:"o1",src:"fa1",c:"green",tag:"SC 1",t:"1. Annual budget for a unit",
+    p:["static{}: IT Gross Spent YTD (A), IT Gross Spend BOY (F), IT Gross Spend (A+F), Gross Investment Current CBA — direct, keyed by Planview Work ID.",
+       "dynamic{}: yearActuals / yearForecast — aggregated."]},
+   {id:"o2",src:"fa2",c:"yellow",tag:"SC 1 · *13",t:"static{} is null on Child Project / Pod / Squad",
+    p:["Planview keys financials by project Work ID. Return null, never 0 — and say which block is empty."]},
+   {id:"o3",src:"fa3",c:"yellow",tag:"*16",t:"*16. aggregated:false must be in the payload",
+    p:["static{} is NOT rolled up child→parent; dynamic{} is. Ship the flag so the model can explain the gap instead of guessing."]},
+   {id:"o4",src:"fa4",c:"magenta",tag:"boundary of SC 1",t:"UNIT_NOT_SUPPORTED",
+    p:["Unit search limitation — same root cause as get_health_data / get_unit_risks."]}]},
+
+ {id:"uc",tool:"get_unit_costs",fill:"pink",
+  params:["params:","– unit (required)","– period {from, to} (required)","– breakdown: labor | other | both","– granularity: month | cumulative"],
+  note:{c:"green",t:"Merged:",p:["was get_labor_cost + get_other_costs. Один концепт DC — costs юнита, разделённые на Labor и Other — значит один тул."]},
+  dia:"Per Unit Type",
+  impl:[{id:"uc1",label:"Standalone Project / Delivery Program<br>Child Project / Pod / Squad",b:[U,H]},
+        {id:"uc2",label:"Portfolio Group / Program",b:[H]},
+        {id:"uc3",label:"Corporate Function / ORGANIZATION",b:[H]}],
+  out:[
+   {id:"o5",src:"uc1",c:"green",tag:"SC 5–9",t:"5 / 6 / 7 / 8 / 9. Unit costs",
+    p:["labor[]: per month / role / person = Hourly Rate × Workload × Working Hours.",
+       "other[]: Cost Type incl. parent path, amount, comment.",
+       "cumulative{}: past, current, forecast — per breakdown."]},
+   {id:"o6",src:"uc1",c:"yellow",tag:"SC 6",t:"warnings[] is mandatory here",
+    p:["Unmapped positions contribute 0. Без явного предупреждения итог читается как экономия. Return unmappedPositions: n."]},
+   {id:"o7",src:"uc2",c:"green",tag:"SC 5–9",t:"Same shape, rolled up",
+    p:["Other Costs sidebar уже включает дочерние юниты, поэтому вызов на уровне Portfolio Group покрывает его проекты."]},
+   {id:"o8",src:"uc3",c:"magenta",tag:"boundary of SC 5–9",t:"UNIT_NOT_SUPPORTED",
+    p:["Unit search limitation, и Resource Plan задокументирован только до уровня Portfolio Group."]}]},
+
+ {id:"rc",tool:"get_rate_card",
+  params:["params:","– vendor, rateCardType","– role, locationType","– country, city","– effectiveDate","(все — опциональные фильтры)"],
+  note:{c:"yellow",t:"Not unit-scoped:",p:["параметра unit нет, значит ветки Per Unit Type тоже нет. Доступ на уровне организации — это проверка прав, а не уровень."]},
+  impl:[{id:"rc1",label:"Organization-wide rate card dictionary",b:[NU]}],
+  out:[
+   {id:"o9",src:"rc1",c:"green",tag:"SC 3",t:"3. Rate card lookup — READ ONLY",
+    p:["Возвращает все совпадения с hourly rate и периодом действия. Сворачивать к одному нельзя — Rate Card Type и Vendor меняют цифру."]},
+   {id:"o10",src:"rc1",c:"yellow",tag:"*15",t:"*15. No write tool, on purpose",
+    p:["Rate Cards редактируются в DC ролью Rates Editor. Тул должен отправить пользователя туда, а не имитировать запись."]}]},
+
+ {id:"wh",tool:"get_working_hours_calendar",
+  params:["params:","– year (required)","– country","– vendor"],
+  note:{c:"yellow",t:"Not unit-scoped:",p:["оставлен отдельно от get_rate_card — склейка тулов с несовместимыми обязательными параметрами заставляет модель угадывать."]},
+  impl:[{id:"wh1",label:"Organization-wide working hours calendars",b:[NU]}],
+  out:[
+   {id:"o11",src:"wh1",c:"green",tag:"SC 4",t:"4. Working hours calendar",
+    p:["hours + resolvedFrom: vendor+country | country | organizational | systemDefault. Всегда сообщать, какой уровень ответил."]}]}
+]},
+
+{id:"res",title:"2 · RESOURCES",sub:"Контекст, который прикрепляет клиент, а не вызывает модель. Небольшие стабильные справочники — прочитаны раз и переиспользуются.",rows:[
+ {id:"ct",tool:"dc://dictionaries/\ncost-types",fill:"grey",params:["no params","URI-addressed"],
+  impl:[{id:"ct1",label:"Cost Category / Cost Type list",b:[CA]}],
+  out:[
+   {id:"o12",src:"ct1",c:"green",tag:"*11",t:"Correct category naming, for free",
+    p:["Позволяет модели использовать точные сконфигурированные метки вместо выдуманных, и лежит в основе *11 — что вне скоупа."]},
+   {id:"o13",src:"ct1",c:"yellow",tag:"design",t:"Why a Resource and not a Tool",
+    p:["Фиксированный, крошечный, нужен почти в каждом финансовом ответе. Тул-вызов на каждый вопрос — потраченные round-trip'ы."]}]},
+ {id:"hi",tool:"dc://units/{unit}/\nhierarchy",fill:"grey",params:["URI template","– unit"],
+  impl:[{id:"hi1",label:"Unit type + parents + children",b:[CA]}],
+  out:[
+   {id:"o14",src:"hi1",c:"green",tag:"boundary of SC 1, 5–9",t:"Prevents the unsupported call",
+    p:["Модель узнаёт тип юнита до вызова и может сказать «на уровне Portfolio не поддерживается» без провального round-trip."]},
+   {id:"o15",src:"hi1",c:"redbg",tag:"open decision",t:"Design proposal",
+    p:["Этого ресурса в документации DC сегодня нет — это то, что нужно канонической форме. Требует решения."]}]}
+]},
+
+{id:"pr",title:"3 · PROMPTS",sub:"Шаблоны, вызываемые пользователем. Здесь живёт оркестрация — и никогда внутри тула.",rows:[
+ {id:"cf",tool:"compare_forecast\n_vs_actuals",fill:"pink",params:["args:","– unit","– period"],
+  note:{c:"yellow",t:"сценарий от Лёши А.",p:["предлагался как тул — это композиция, поэтому становится промптом."]},
+  impl:[{id:"cf1",label:"get_unit_costs + get_financial_attributes",b:[CP]}],
+  out:[
+   {id:"o16",src:"cf1",c:"green",tag:"SC 17",t:"17. Compare RP forecast vs PV actuals",
+    p:["Шаблон несёт три оговорки: разные разрезы, разная свежесть, несмэппленные позиции."]},
+   {id:"o17",src:"cf1",c:"redbg",tag:"SC 2",t:"Consequence of scenario 2",
+    p:["get_budget_data нереализуем, поэтому сторона Planview может быть только годовыми статическими итогами. Сравнение годовое, не месяц-к-месяцу."]}]},
+ {id:"br",tool:"budget_review",fill:"pink",params:["args:","– unit","– period"],
+  impl:[{id:"br1",label:"get_health_data + get_unit_risks + get_unit_costs",b:[CP]}],
+  out:[
+   {id:"o18",src:"br1",c:"green",tag:"outside the 17",t:"QBR / steering-committee prep",
+    p:["Одно действие пользователя, три примитива. Каждая секция сохраняет свою метку «as of», поскольку фиды обновляются по разным расписаниям."]}]}
+]}];
+
+const CONTRACT=[
+ {id:"c1",c:"green",tag:"*13",t:"Typed nulls, never 0",p:["Отсутствующие данные возвращаются как null с причиной. Коэрция пустого в 0 у annual-фида происходит выше по потоку — значит помечай её как коэрцию, а не выдавай за отчётную цифру."]},
+ {id:"c2",c:"green",tag:"*12",t:"Provenance on every response",p:["source feed + lastSyncedAt на каждый блок. Monthly и Annual синкаются независимо, поэтому один ответ законно смешивает две даты свежести."]},
+ {id:"c3",c:"green",tag:"*10 · *11",t:"Semantic errors, not empty results",p:["PERMISSION_DENIED — с названием недостающей роли","UNIT_NOT_SUPPORTED · NO_DATA · OUT_OF_SCOPE · STALE","Пустой массив, который читается как ноль, — главный способ ввести в заблуждение."]},
+ {id:"c4",c:"green",tag:"*15",t:"readOnlyHint on all four tools",p:["Ни одного write-тула. Rate Cards и Other Costs редактируются в DC — тул называет экран и роль вместо этого."]},
+ {id:"c5",c:"green",tag:"*11",t:"Explicit currency and unit",p:["Каждая сумма несёт CAD, каждое значение часов — свой уровень fallback. *11: не-IT категории возвращают OUT_OF_SCOPE, а не приближение."]},
+ {id:"c6",c:"magenta",tag:"*12 · *14",t:"Still not answerable",p:["*12 про свежесть и *14 про диагностику импорта требуют статуса джобы PV-агента и логов, которые не выставлены. *13 закрывается контрактом выше, а не тулом."]}];
+
+/* ============================ СЦЕНАРИИ ============================ */
+const S=[
+{sid:"SC 1",st:"ok",title:"годовые итоги по юниту",q:"Какие годовые итоги по юниту X?",
+ row:"fa",outs:["o1","o2","o4"],res:"hi",con:["c1","c2","c3","c4","c5"],
+ steps:[["2","Ресурсы уже прикреплены","Клод читает dc://units/X/hierarchy — юнит X это Standalone Project, значит уровень поддерживается — и cost-types для точных меток. Тул-вызова ещё нет."],
+ ["3","Модель выбирает тул","unit — единственный обязательный параметр, readOnlyHint подтверждает, что записи не будет. Вызов get_financial_attributes(unit=\"X\")."],
+ ["4","Сервер резолвит юнит","Параметр unit матчится по иерархии DC — именно этот шаг падает на верхних уровнях, из-за чего существует 5b."],
+ ["5","Уровень = Project","Единственный уровень, где у Planview есть статическая запись: лист Annual Budget ключуется по project Work ID."],
+ ["6","Собирается payload","static{}: четыре годовых итога, aggregated:false. dynamic{}: yearActuals / yearForecast, aggregated:true. Плюс provenance и CAD."],
+ ["7","Правила контракта формируют формулировку","Типизированные null, lastSyncedAt на блок, явная CAD и флаги агрегации — чтобы ответ мог сказать, что каждая цифра включает, а что нет."],
+ ["8","Клод собирает ответ","Два размеченных блока: собственные годовые итоги юнита и агрегированные годовые цифры — у каждого своя дата синка."],
+ ["5a","Если бы X был Child Project / Pod / Squad","Резолв проходит, но static{} приходит null. Клод сообщает, что четыре итога недоступны, и объясняет почему, вместо показа нулей."],
+ ["5b","Если бы X был Corporate Function / ORGANIZATION","UNIT_NOT_SUPPORTED — unit search limitation. Благодаря шагу 2 это можно сказать до вызова, без провального round-trip."],
+ ["!","Если у вызывающего нет роли","PERMISSION_DENIED с названием Teams Budget Viewer/Editor. Тул остаётся видимым, потому что библиотека не фильтрует список по правам."]],
+ ans:["unit X (Standalone Project, Work ID 0011167) — годовые цифры, по состоянию на синк Annual Budget от 2024-10-28, всё в CAD:",
+ "IT Gross Spent YTD (A) 1 850 000 · IT Gross Spend BOY (F) 2 500 000 · IT Gross Spend (A+F) 2 500 000 · Gross Investment Current CBA 3 000 000.",
+ "Эти четыре — собственные значения юнита X, не подкатка дочерних. Year Actuals 1 850 000 и Year Forecast 650 000 агрегированы по X и его под-юнитам и приходят из Monthly-фида, синк 2024-11-04, то есть на семь дней свежее."]},
+
+{sid:"SC 2",st:"no",title:"месячные и годовые показатели бюджета",q:"Как юнит X отработал по бюджету в ноябре — прогноз против факта?",
+ row:"cf",outs:["o17"],con:["c3"],
+ steps:[["2","Ресурсы прикреплены, но не помогают","Иерархия и cost-types описывают структуру и метки. Ни один не несёт цифр, поэтому заменить отсутствующий фид они не могут."],
+ ["3","Ни один тул не подходит","Ничто на поверхности не читает Month columns из Budget Management (Forecast / Actual / Variance). get_budget_data выброшен как нереализуемый."],
+ ["4","Проверяются ближайшие соседи","get_financial_attributes отдаёт только годовые итоги. get_unit_costs отдаёт собственный расчёт DC из рейт-карт и загрузок — не отчётный факт Planview."],
+ ["6","Пробел зафиксирован здесь","Красная заметка в Prompts — единственное место, где этот сценарий вообще присутствует: именно поэтому сравнение в SC 17 годовое."],
+ ["8","Клод отказывает точно","Называет, чего не хватает, и предлагает то, что реально может дать, с честной маркировкой."],
+ ["!","Никогда не подменять одно другим","Выдать Resource-Plan косты за факт Planview — значит переврать источник. Они считаются иначе и обновляются по другому расписанию."]],
+ ans:["Месячные прогноз, факт и отклонение из Budget Management через эту поверхность недоступны — их не читает ни один тул.",
+ "Что могу дать по юниту X: годовые итоги из Planview, либо помесячную разбивку затрат из Resource Plan. Второе — собственный расчёт Delivery Central из рейт-карт и загрузок, а не отчётный факт Planview, так что это ответ на другой вопрос, и выдавать его за ту же цифру я не буду."]},
+
+{sid:"SC 3",st:"ok",title:"поиск рейт-карт",q:"Какая у нас часовая ставка на Senior Software Engineer, offshore, Пуна, Индия?",
+ row:"rc",outs:["o9","o10"],con:["c4","c5"],
+ steps:[["2","Юнит не участвует","Рейт-карты — организационный справочник, поэтому ресурс иерархии не читается и ветки Per Unit Type нет."],
+ ["3","Модель выбирает get_rate_card","Все параметры — опциональные фильтры. Передаются role, locationType, country и city — те четыре, что назвал пользователь."],
+ ["4","Авторизация, а не резолв","Вызову нужна роль Rates Editor на организационном юните. Это проверка прав на глобальном справочнике, а не уровень иерархии."],
+ ["6","Возвращаются все совпадения","Rate Card Type и Vendor меняют цифру, поэтому payload сохраняет все подходящие ставки с их периодами, а не выбирает одну."],
+ ["7","Валюта явная","Каждая ставка несёт CAD и свои Start / End даты, поэтому ответ нельзя прочитать как одно вневременное число."],
+ ["8","Клод перечисляет совпадения","Вендор, тип рейт-карты и период для каждой — выбирает пользователь."],
+ ["!","Если период пересекает смену ставки","Возвращаются обе применимые ставки со своими диапазонами. Усреднить их — значит выдумать ставку, которой нет ни в одной рейт-карте."]],
+ ans:["Под эту роль и локацию подходят две рейт-карты, обе в CAD за час:",
+ "EPAM · Blended · Senior Software Engineer · Offshore · Индия · Пуна — 45,00, действует с 2024-01-01 по 2024-12-31.",
+ "EPAM · Actual · та же роль и локация — 41,50, тот же период.",
+ "Rate Card Type меняет цифру, поэтому обе оставлены, выбор за вами. Последнее обновление 2024-02-10."]},
+
+{sid:"SC 4",st:"ok",title:"календарь рабочих часов",q:"Сколько рабочих часов заложено на Польшу в декабре 2024?",
+ row:"wh",outs:["o11"],con:["c5"],
+ steps:[["2","Юнита нет, значит нет и обращения к иерархии","Календари рабочих часов организационные, лежат на вкладке Rates рядом с рейт-картами."],
+ ["3","get_working_hours_calendar(year=2024, country=\"Poland\")","year — единственный обязательный параметр, country и vendor сужают выборку."],
+ ["4","Тот же организационный гейт прав","Календари живут на организационной вкладке Rates, поэтому применяется та же авторизация, что и к рейт-картам."],
+ ["6","Уровень fallback — часть payload","resolvedFrom говорит, какой уровень ответил: vendor+country, country, organizational или системный дефолт."],
+ ["7","Никогда не отдавать часы без их уровня","Системный дефолт Пн–Пт по 8 часов выглядит идентично настроенному календарю Польши, если payload не скажет, что это было."],
+ ["8","Клод сообщает часы и происхождение","Число, арифметику рабочих дней за ним и уровень, до которого дошёл fallback."],
+ ["!","Если на этот год ничего нет","Ответ обязан сказать, что откатился к Пн–Пт по 8 часов, а не выдавать это за настроенные данные."]],
+ ans:["168 часов на декабрь 2024 — 21 рабочий день по 8 часов.",
+ "Значение пришло из странового календаря Польши по умолчанию: вендор-специфичного календаря Польши на 2024 не существует, поэтому lookup откатился на один уровень.",
+ "Если нужна цифра под конкретного вендора, такой календарь сначала надо загрузить на вкладке Rates."]},
+
+{sid:"SC 5",st:"ok",title:"Other Costs юнита",q:"Какие other costs заведены на юните X в этом году?",
+ row:"uc",outs:["o5","o8"],res:"ct",con:["c1","c5"],
+ steps:[["2","Сначала используется ресурс cost-types","Он даёт точные метки Cost Category / Cost Type, сконфигурированные в этом деплое, чтобы ответ совпадал с тем, что пользователь видит на экране."],
+ ["3","Один тул покрывает оба вида затрат","get_unit_costs(unit=\"X\", period, breakdown=\"other\") — breakdown выбирает; labor и other слиты в один примитив."],
+ ["4","Сервер резолвит юнит","Resource Plan задокументирован для business unit, account, program, project и stream."],
+ ["5","Уровень = Standalone Project / Delivery Program / Child Project / Pod / Squad","Там, где записи Other Cost реально создаются. Каждая запись всегда привязана к конкретному юниту."],
+ ["6","Возвращается other[]","Cost Type с путём до родительской категории, сумма по месяцам, комментарий и владеющий юнит. Повторяемость выводится из Repeat плюс Start / End."],
+ ["8","Клод отвечает метками самого DC","И говорит, что это заведено вручную в DC, а не синхронизировано из Planview — иначе их принимают за цифры Planview."],
+ ["5b","На Corporate Function / ORGANIZATION","UNIT_NOT_SUPPORTED. Unit search limitation плюс то, что Resource Plan не задокументирован выше уровня Portfolio Group."]],
+ ans:["Other Costs, заведённые на юните X в 2024, всё в CAD (метки — как сконфигурировано в этом деплое):",
+ "Consultants (под IT Corp Spend Excl Labour) — 92 000, повторяется ежемесячно янв–дек · Hardware (под IT Sustaining Capex) — 40 000, разово в марте, комментарий «lab refresh» · Contingency — 15 000, ежеквартально.",
+ "Это заведено вручную в DC ролью Rates Mapper или Editor — из Planview не приходит. Список включает записи дочерних юнитов X."]},
+
+{sid:"SC 6",st:"ok",title:"Labor Cost за месяц / роль / человека",q:"Сколько стоила позиция Senior Java Developer на юните X в ноябре?",
+ row:"uc",outs:["o5","o6"],res:"hi",con:["c1","c5"],
+ steps:[["2","Ресурс иерархии подтверждает уровень","Финансы Resource Plan задокументированы до уровня Portfolio Group включительно, так что X как Standalone Project (или Delivery Program) означает, что вызов зарезолвится."],
+ ["3","breakdown=labor, granularity=month","get_unit_costs(unit=\"X\", period={from:\"2024-11\",to:\"2024-11\"}, breakdown=\"labor\", granularity=\"month\")."],
+ ["5","Уровень = Standalone Project / Delivery Program / Child Project / Pod / Squad","Позиции живут здесь, а стоимость позиций — то, из чего собирается Labor Cost."],
+ ["6","labor[] вычисляется, а не хранится","Hourly Rate из смэппленной Rate Card × Workload × Working Hours per Month — часть с часами использует цепочку fallback из SC 4."],
+ ["6a","warnings[] здесь не опционален","Позиция без Rate Card Mapping не даёт вообще ничего. unmappedPositions обязан быть в payload, иначе итог молча занижен."],
+ ["8","Клод показывает входы, а не только итог","Ставку, загрузку и часы, чтобы цифру можно было проверить — и тут же говорит про пробел в маппинге."],
+ ["!","Низкий итог может быть дыркой в маппинге","Несмэппленные позиции читаются как экономия. Сказать об этом — разница между полезным и обманчивым ответом."]],
+ ans:["Позиция Senior Java Developer на юните X стоила 7 200 CAD в ноябре 2024: 45,00 CAD/ч × 100% загрузки × 160 часов.",
+ "160 часов пришли из странового календаря Польши по умолчанию, поскольку вендор-специфичного на 2024 нет.",
+ "Ещё одна позиция на юните X не имеет Rate Card Mapping, поэтому в итог юнита не попала — этот итог занижен, пока маппинг не добавлен."]},
+
+{sid:"SC 7",st:"ok",title:"Labor Cost — cumulative",q:"Сколько всего потрачено на людей по юниту X и сколько ещё в прогнозе?",
+ row:"uc",outs:["o5"],con:["c2","c5"],
+ steps:[["3","granularity=cumulative, breakdown=labor","Тот же тул, что в SC 6; меняется только granularity — поэтому это один примитив, а не два."],
+ ["4","Сервер резолвит юнит","Тот же шаг резолва и то же падение на верхушке иерархии."],
+ ["5","Уровень = project-level типы или Portfolio Group с подкаткой","На уровне аккаунта цифра уже включает дочерние юниты, так что ответ по родителю покрывает его проекты."],
+ ["6","cumulative{} past / current / forecast","Cumulative Cost — это прошлые затраты плюс текущий месяц плюс прогноз, и прогноз достаёт на два года вперёд."],
+ ["7","Пересчёт может быть в процессе","Смена рейт-карты или загрузки запускает пересчёт; пока он идёт, показатели устаревшие, и ответ должен это сказать."],
+ ["8","Клод разделяет потраченное и запланированное","Единая cumulative-цифра провоцирует прочитать план как обязательства."],
+ ["!","Это не цифра Planview","Это собственный расчёт Delivery Central. Предлагать её как отчётный факт нельзя."]],
+ ans:["Юнит X, только люди, всё в CAD: прошлое 1 240 000 · текущий месяц 96 000 · прогноз 640 000 — cumulative 1 976 000.",
+ "Прогнозная часть покрывает запланированную загрузку до двух лет вперёд, так что большая часть этих 640 000 ещё не является обязательствами.",
+ "Это собственный расчёт Delivery Central из рейт-карт и загрузок, а не цифра, отчитанная Planview."]},
+
+{sid:"SC 8",st:"ok",title:"Other Cost за месяц / по типу",q:"Разложи other costs юнита X по типам за Q4.",
+ row:"uc",outs:["o5"],res:"ct",con:["c1","c5"],
+ steps:[["2","Ресурс cost-types даёт группировку","Дерево категорий приходит из сконфигурированного справочника, поэтому группировка в ответе совпадает с группировкой на экране."],
+ ["3","breakdown=other, granularity=month","Период — Q4, значит на каждый тип затрат приходит три месячных ведра."],
+ ["5","Уровень = Standalone Project / Delivery Program / Child Project / Pod / Squad","Плюс записи дочерних юнитов, которые Other Costs sidebar включает всегда."],
+ ["6","Повторяемость раскрывается по месяцам","Запись с ежемесячным повтором появляется в каждом месяце периода; разовая — только в своём."],
+ ["7","Отсутствует — не значит ноль","Тип затрат без записей в периоде опускается, а не показывается как 0 — иначе читается как сознательно нулевой бюджет."],
+ ["8","Клод отдаёт только то, что есть","Сгруппировано по типу затрат, с указанием месяцев, которые дали вклад."],
+ ["!","Названия категорий разнятся между деплоями","Использование меток из справочника, а не по памяти, — то, что делает ответ проверяемым."]],
+ ans:["Юнит X, Other Costs, Q4 2024, всё в CAD:",
+ "Consultants (IT Corp Spend Excl Labour) — 276 000, из ежемесячной записи 92 000 за октябрь, ноябрь и декабрь.",
+ "Contingency — 45 000, одна квартальная запись в декабре.",
+ "В Q4 не попадает ни одной записи Hardware — у этой категории нет строк в периоде, что не то же самое, что нулевой бюджет."]},
+
+{sid:"SC 9",st:"ok",title:"Other Cost — cumulative",q:"Какие у юнита X накопленные other costs в разбивке past / current / forecast?",
+ row:"uc",outs:["o5"],con:["c2","c5"],
+ steps:[["3","breakdown=other, granularity=cumulative","Other-половина того же Cumulative Cost, который показывает заголовок юнита."],
+ ["4","Сервер резолвит юнит","Тот же резолв и то же ограничение на верхних уровнях, что и на стороне людей."],
+ ["5","Уровень = project-level типы или Portfolio Group с подкаткой","Other Costs дочерних юнитов включаются собственной логикой сайдбара."],
+ ["6","Прогноз выводится из правил повторения","Будущие месяцы раскрываются из Repeat и Start / End каждой записи, а не из отдельного поля прогноза."],
+ ["7","Свежесть на блок","Other Costs меняются в момент, когда кто-то правит их в DC, в отличие от цифр из Planview."],
+ ["8","Клод говорит, что движет прогнозом","Чтобы пользователь понимал: будущая часть — это проекция стоящих записей, а не кем-то утверждённый план."],
+ ["!","Правка записи двигает всю кривую","Изменение Repeat или диапазона дат запускает пересчёт и сдвигает прошлое и прогноз вместе."]],
+ ans:["Юнит X, только Other Costs, всё в CAD: прошлое 340 000 · текущий месяц 92 000 · прогноз 368 000 — cumulative 800 000.",
+ "Прогнозная часть — проекция стоящих записей: ежемесячная линия Consultants на 92 000 и квартальная Contingency, раскрытые вперёд.",
+ "Вместе со стороной людей (1 976 000) это даёт общий Cumulative Cost 2 776 000 CAD по юниту X."]},
+
+{sid:"*10",st:"ok",title:"запрос без нужных прав",q:"Покажи бюджет по юниту X.",
+ row:null,outs:[],con:["c3","c4"],
+ steps:[["2","Тул виден всё равно","Библиотека Spring AI не умеет фильтровать список тулов по правам, поэтому модель видит тул, который вызывающему может быть не положен."],
+ ["3","Модель вызывает его добросовестно","Ничто в схеме не сигнализирует об авторизации, так что узнать до вызова невозможно."],
+ ["6","Сервер отвечает кодом, а не тишиной","PERMISSION_DENIED с названием недостающей роли — никогда не пустым результатом, который читается как «нет данных»."],
+ ["7","Здесь работает именно контракт","Пустой массив был бы неотличим от юнита без бюджета. Код ошибки — то, что предотвращает это прочтение."],
+ ["8","Клод называет недостающую роль","Чтобы пользователь знал, что именно запрашивать, у кого и на какой юнит."],
+ ["!","Три независимых гейта","Teams Budget Viewer/Editor для бюджета, Rates Editor для рейтов, Rates Viewer/Mapper/Editor для финансов Resource Plan. Наличие одного не говорит ничего об остальных."]],
+ ans:["Не могу показать бюджет по юниту X — нужна роль Teams Budget Viewer или Budget Editor на доступном юните, а её на вашем аккаунте нет.",
+ "Стоит знать: три финансовые зоны гейтятся раздельно. Рейт-картам нужен Rates Editor на уровне организации, а цифрам затрат Resource Plan — Rates Viewer, Mapper или Editor. Выдача одной из них не откроет остальные, так что запрашивать стоит именно нужную."]},
+
+{sid:"*11",st:"ok",title:"категория, не синхронизируемая из Planview",q:"Сколько мы потратили на Real Estate по юниту X?",
+ row:"ct",outs:["o12"],con:["c3","c5"],
+ steps:[["3","Это отвечается без тул-вызова","Ресурс cost-types уже перечисляет все категории, сконфигурированные в DC, поэтому отсутствие видно сразу."],
+ ["4","Справочник и есть граница","Из Planview синхронизируются только IT cost types. Всё остальное в финансовой модели Planview просто не имеет соответствия в DC."],
+ ["6","Что есть и чего нет","В скоупе: IT Labour, IT Corp Spend Excl Labour, IT Sustaining Capex, IT Sustaining Opex. Вне: Business Corp Spend, RE Corp Spend, Funds Released, CTDA Approvals, Benefits."],
+ ["7","OUT_OF_SCOPE, а не NO_DATA","Разница существенна: NO_DATA приглашает «проверить позже», а OUT_OF_SCOPE значит, что через эту интеграцию не придёт никогда."],
+ ["8","Клод обозначает границу прямо","Назвать то, что в скоупе, делает отказ действенным, а не тупиком."],
+ ["!","Никогда не приближать по IT-цифрам","Даже если попросили оценить. Нет такого соотношения между IT и RE, которое эта поверхность могла бы обосновать."]],
+ ans:["Затраты по Real Estate по юниту X недоступны — из Planview в Delivery Central синхронизируются только IT-категории.",
+ "В скоупе: IT Labour, IT Corp Spend Excl Labour, IT Sustaining Capex, IT Sustaining Opex. Вне скоупа: Business Corp Spend, RE Corp Spend, Funds Released, CTDA Approvals и Benefits — они есть в Planview, но были сознательно исключены из интеграции, так что в DC их нет вообще.",
+ "Оценивать цифру по RE из IT-показателей я не буду: между ними нет связи, за которую можно поручиться. Смотреть надо в Planview."]},
+
+{sid:"*12",st:"part",title:"актуальны ли эти цифры",q:"Актуальны ли эти цифры по бюджету?",
+ row:null,outs:[],con:["c2","c6"],
+ steps:[["2","Два фида — значит два ответа","Monthly Budget и Annual Budget импортируются независимо, у каждого свой enable-флаг и своё расписание."],
+ ["6","Provenance отвечает на половину вопроса","Каждый блок payload может несть свой lastSyncedAt, поэтому Клод всегда может сказать, насколько свежи цифры, которые он только что прочитал."],
+ ["7","Это та часть, которую контракт закрывает","Даты синка на блок — причина, по которой один ответ законно сообщает две разные даты свежести."],
+ ["8","У второй половины нет источника","Прошёл ли следующий импорт, включён ли он, упал ли — держится в runtime-конфигурации агента и логах, которые не выставлены ни одним примитивом."],
+ ["!","Не подразумевать свежесть, которую нельзя проверить","Сказать «эти данные актуальны» без даты синка — тот самый провал, ради предотвращения которого сценарий и существует."],
+ ["!","Что закрыло бы вопрос","Выставить статус джобы агента и флаги monthly.enable / annual.enable как read-only ресурс."]],
+ ans:["Могу сказать, когда синхронизировались данные, которые я только что прочитал: годовые итоги от 2024-10-28, месячные цифры от 2024-11-04. Каждый блок несёт свою дату, поэтому они и различаются — фиды идут по разным расписаниям.",
+ "Чего сказать не могу — здоров ли пайплайн прямо сейчас: прошёл ли последний плановый импорт и не выключен ли какой-то из фидов. Это живёт в runtime-конфигурации агента Planview и логах, которые сюда не выставлены. Проверить может тот, у кого есть доступ к агенту."]},
+
+{sid:"*13",st:"part",title:"ноль против пустой ячейки",q:"Почему здесь показан 0 — мы правда ничего не потратили?",
+ row:"fa",outs:["o2"],con:["c1"],
+ steps:[["2","Это не тул, а правило сериализации","Ни один примитив на это не отвечает. Решает то, как payload представляет отсутствие — поэтому сценарий и сидит в контракте."],
+ ["3","Два датасета, два противоположных правила","Monthly Budget: пустая ячейка остаётся пустой, значит приходит как null. Annual Budget: пустое значение коэрцится в 0 при импорте."],
+ ["5","Уровень тоже важен","На Stream пустой весь статический блок, потому что Planview ключует годовые данные по project Work ID."],
+ ["6","Payload обязан их различать","null для отсутствующего, 0 только там, где 0 действительно отчитан — и флаг там, где 0 получился коэрцией."],
+ ["7","Это главная работа контракта","Перепутать — значит выдать «расход за декабрь 0», когда на самом деле ничего не отчитано."],
+ ["8","Клод объясняет, какое правило сработало","Назвать блок, из которого пришла цифра, и есть то, что делает этот 0 интерпретируемым."]],
+ ans:["Зависит от того, из какого блока пришла цифра, и эти два ведут себя противоположно.",
+ "В месячных данных пустое остаётся пустым: за этот месяц не отчитан ни прогноз, ни факт, поэтому показывать нечего — и это не то же самое, что нулевые траты.",
+ "В годовых итогах пустое значение превращается в 0 при импорте файла. Значит 0 там может означать «оставлено пустым в Planview», а не «ничего не потратили».",
+ "Для юнита X тот 0, который вы видите, — годовой итог, то есть второй случай: значение отсутствовало в источнике, а не было отчитано как нулевое."]},
+
+{sid:"*14",st:"no",title:"почему упал импорт",q:"Почему я не вижу свежих цифр по юниту X?",
+ row:null,outs:[],con:["c6","c3"],
+ steps:[["2","Существуют два класса отказа с очень разным эффектом","Неизвестный Work ID скипает только строки этого проекта и поднимает warning. Неизвестный Cost Type халтит весь файл, и не загружается вообще ничего."],
+ ["6","Оба записываются, с номером строки","Агент пишет корневую причину и ссылку на проблемную строку исходного файла — специально, чтобы починку можно было локализовать."],
+ ["7","Но записано не значит выставлено","Логи и статус джобы агента лежат вне всех примитивов этой поверхности. Читать нечего."],
+ ["8","Клод объясняет механизм, а не этот прогон","Описать два режима отказа полезно; утверждать, что знаешь, какой случился, — уже выдумка."],
+ ["!","Где смотреть на самом деле","Лог PV-агента за этот прогон, и справочник Cost Types в My Team → Settings, если халт был из-за несовпадения типа затрат."],
+ ["!","Что закрыло бы вопрос","Read-only ресурс с исходом последнего прогона, классом отказа и ссылкой на строку."]],
+ ans:["Диагностировать именно этот прогон не могу — исход импорта живёт в логах агента Planview, которые эта поверхность не выставляет.",
+ "Что могу сказать — как оно падает. Если файл ссылается на Work ID, которого нет в DC, скипаются только строки этого проекта, пишется warning, всё остальное загружается. Если ссылается на Cost Type, которого нет в справочнике Cost Types в DC, отвергается весь файл и не загружается ничего — что лучше соответствует «свежих цифр нигде нет», чем «нет по юниту X».",
+ "Лог называет проблемную строку в обоих случаях; справочник лежит в My Team → Settings."]},
+
+{sid:"*15",st:"ok",title:"попытка изменить данные",q:"Поставь прогноз на декабрь по юниту X в 50 000.",
+ row:"rc",outs:["o10"],con:["c4","c3"],
+ steps:[["2","Write-примитива не существует","У всех четырёх тулов стоит readOnlyHint. Модель видит, что записи не предлагают, ещё до попытки."],
+ ["3","Значит запись и не пробуется","Правильное поведение — маршрутизировать запрос, а не имитировать мутацию и не обещать изменение."],
+ ["6","Но причина разная для разных датасетов","Budget Management пишется только сервис-аккаунтом синка. Rate Cards и Other Costs реально редактируются человеком в DC."],
+ ["7","Смешать их было бы ошибкой","Сказать пользователю, что рейт-карты залочены, так же бесполезно, как намекнуть, что цифры бюджета можно вписать руками."],
+ ["8","Клод маршрутизирует на экран и роль","Назвать и место, и право превращает отказ в то, с чем можно что-то сделать."],
+ ["!","Budget Editor не значит правку руками","Эта роль покрывает просмотр и администрирование в DC, а не ручной ввод синхронизированных цифр."]],
+ ans:["Изменить не могу, и руками в DC этого не может никто: цифры Budget Management пишутся только сервис-аккаунтом синка Planview. Чтобы сдвинуть этот декабрьский прогноз, он должен измениться в Planview и приедет следующим плановым синком. Наличие Budget Editor этого не меняет — роль покрывает просмотр и администрирование, а не ручной ввод.",
+ "Если вы имели в виду ставку или запись other cost — вот они как раз редактируемы: Finance → Rates → Add Cost Rate требует Rates Editor, а сайдбар Other Costs на Resource Plan — Rates Mapper или Editor. Могу довести до нужного экрана."]},
+
+{sid:"*16",st:"ok",title:"разные цифры на разных экранах",q:"Почему юнит X показывает 500 000 на одном экране и 2 500 000 на другом?",
+ row:"fa",outs:["o3"],res:"hi",con:["c2"],
+ steps:[["2","Ресурс иерархии объясняет расстановку","У юнита X есть дочерние юниты — а это предпосылка того, что две цифры вообще могут разойтись."],
+ ["3","Один вызов возвращает обе цифры","get_financial_attributes(unit=\"X\") несёт статический и динамический блоки вместе, поэтому расхождение видно в одном payload."],
+ ["5","Уровень = Customer / Program","Родительский юнит — ровно там, где два правила агрегации расходятся. На листовом проекте они бы совпали."],
+ ["6","Оба флага в payload","static aggregated:false — только собственная запись юнита. dynamic aggregated:true — юнит плюс все его под-юниты."],
+ ["7","Сообщать флаг, а не правило по памяти","Оба дефолта настраиваемы на уровне деплоя, поэтому ответ должен отражать то, что пришло, а не то, что обычно верно."],
+ ["8","Клод объясняет, а не хеджирует","Обе цифры корректны, они отвечают на разные вопросы. Назвать это возможным багом было бы неверно."],
+ ["!","Почему они разъехались","Собственная статическая запись родителя так и не была обновлена под то, что теперь держат его дети."]],
+ ans:["Обе корректны — они отвечают на разные вопросы.",
+ "500 000 — это статический IT Gross Spend (A+F), лежащий на самом юните X. Он возвращается с aggregated:false, то есть отражает только то, что залито в X напрямую, а не подкатку дочерних юнитов.",
+ "2 500 000 — динамическая годовая цифра, возвращается с aggregated:true: юнит X плюс все его под-юниты. Они разошлись потому, что собственная статическая запись X не обновлялась под её детей. Оба дефолта агрегации настраиваемы, поэтому я сообщаю флаги ровно так, как они пришли, а не по правилу."]},
+
+{sid:"SC 17",st:"ok",title:"RP forecast против Planview actuals",q:"Соответствует ли план по стаффингу юнита X тому, что отчитали финансы?",
+ row:"cf",outs:["o16","o17"],comp:["fa","uc"],con:["c2","c5"],
+ steps:[["2","Это промпт, а не тул","Ни один экран DC не сводит две стороны, а оркестрация не должна жить внутри тула. Шаблон — то, что вызывает пользователь."],
+ ["3a","get_unit_costs для стороны плана","Люди плюс other costs, собранные снизу вверх из рейт-карт, загрузок и стоящих записей."],
+ ["3b","get_financial_attributes для отчётной стороны","Статические годовые итоги, ключованные по project Work ID."],
+ ["6","Две стороны не сходятся по построению","Planview бьёт по Cost Type; Resource Plan бьёт по позициям и своим типам other cost. Безопасно сравнивать только итоги."],
+ ["6a","И сравнение получается годовым","Поскольку месячные факты Planview недостижимы, отчётной стороной может быть только годовой итог, а не помесячный ряд."],
+ ["7","Две разные даты свежести","Resource Plan пересчитывается на месте; сторона Planview — недельный снапшот. Обе даты принадлежат ответу."],
+ ["8","Клод сравнивает итоги, проговаривая оговорки","Одна цифра разрыва без них выглядела бы куда точнее, чем есть."],
+ ["!","Одна сторона может быть занижена","Позиции без маппинга рейт-карты не дают ничего, поэтому план может быть ниже реальности, а не действительно экономнее."]],
+ ans:["За 2024 по юниту X: сторона Resource Plan даёт 1 976 000 CAD по людям плюс 800 000 CAD other costs = 2 776 000 CAD, пересчитано на месте. Planview отчитывает IT Gross Spend (A+F) 2 500 000 CAD по состоянию на синк 2024-10-28.",
+ "Разрыв около 276 000 CAD, но читать его надо с тремя поправками. Это годовое сравнение, а не месяц-к-месяцу, потому что месячные факты Planview здесь недоступны. Две стороны раскладывают затраты по-разному, поэтому сопоставимы только итоги. И одна позиция на юните X не имеет маппинга рейт-карты, поэтому сторона плана скорее занижена — реальный разрыв может быть больше."]}
+];
+
+/* ============================ РЕНДЕР ============================ */
+let EDITS={};
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!==undefined)e.innerHTML=h;return e};
+const ed=(e,k)=>{e.setAttribute("contenteditable","true");if(k)e.dataset.k=k;return e};
+function applyEdits(){
+  document.querySelectorAll("[data-k]").forEach(e=>{
+    const v=EDITS[e.dataset.k];if(v!==undefined&&e.textContent!==v)e.textContent=v;});
+}
+
+function stickyEl(o){
+  const d=el("div","out "+o.c);d.id="el_"+o.id;
+  d.appendChild(ed(el("b",null,o.t),"out."+o.id+".t"));
+  o.p.forEach((x,i)=>d.appendChild(ed(el("p",null,x),"out."+o.id+".p."+i)));
+  if(o.tag)d.appendChild(el("span","tag",o.tag));
+  return d;
+}
+function noteEl(n,pfx){
+  const d=el("div","note "+n.c);
+  if(n.t)d.appendChild(ed(el("b",null,n.t),pfx+".t"));
+  n.p.forEach((x,i)=>d.appendChild(ed(el("div",null,x),pfx+".p."+i)));
+  return d;
+}
+const schema=document.getElementById("schema");
+SECTIONS.forEach(sec=>{
+  const s=el("div","sec");
+  s.appendChild(ed(el("h2",null,sec.title),"sec."+sec.id+".title"));
+  s.appendChild(ed(el("p","sub",sec.sub),"sec."+sec.id+".sub"));
+  sec.rows.forEach(r=>{
+    const row=el("div","row");row.id="row_"+r.id;
+    // primitive
+    const c1=el("div");
+    const t=ed(el("div","tool"+(r.fill?" "+r.fill:""),r.tool.replace(/\n/g,"<br>")),"row."+r.id+".tool");
+    t.id="el_"+r.id;c1.appendChild(t);
+    if(r.params)c1.appendChild(noteEl({c:"yellow",p:r.params},"row."+r.id+".params"));
+    if(r.note)c1.appendChild(noteEl(r.note,"row."+r.id+".note"));
+    row.appendChild(c1);
+    // diamond
+    const c2=el("div");
+    if(r.dia){const dd=el("div","dia");dd.id="el_dia_"+r.id;
+      dd.appendChild(ed(el("span",null,r.dia),"row."+r.id+".dia"));c2.appendChild(dd);}
+    row.appendChild(c2);
+    // resolution
+    const c3=el("div");
+    r.impl.forEach(i=>{
+      const b=el("div","impl"+(i.b[0][1]==="plain"?" grey":""));b.id="el_"+i.id;
+      b.appendChild(ed(el("span",null,i.label),"impl."+i.id));
+      const bs=el("div","badges");
+      i.b.forEach(x=>bs.appendChild(el("span","bdg "+x[1],x[0])));
+      b.appendChild(bs);c3.appendChild(b);
+    });
+    row.appendChild(c3);
+    // result
+    const c4=el("div");
+    r.out.forEach(o=>c4.appendChild(stickyEl(o)));
+    row.appendChild(c4);
+    s.appendChild(row);
   });
+  schema.appendChild(s);
+});
+// contract band
+const cs=el("div","sec");
+cs.appendChild(ed(el("h2",null,"4 · RESPONSE & ERROR CONTRACT"),"cband.title"));
+cs.appendChild(ed(el("p","sub","Часть, которую проще всего пропустить, а работает она больше всех — схема и семантика ошибок это то, чем модель обучается отвечать правильно."),"cband.sub"));
+const cb=el("div","cband");
+CONTRACT.forEach(o=>cb.appendChild(stickyEl(o)));
+cs.appendChild(cb);schema.appendChild(cs);
+
+/* ============================ ПРИМЕРЫ ============================ */
+const EXAMPLES=[
+  {tool:"get_financial_attributes",cases:[
+    {lbl:"Project — все четыре годовых показателя (SC 1)",
+     req:'{\n  "name": "get_financial_attributes",\n  "arguments": {\n    "unitId": "034233"\n  }\n}',
+     rtype:"ok",
+     res:'unit: 034233\naggregated: false\ncurrency: CAD\nIT Gross Spent YTD: 1850000.00\nIT Gross Spend BOY: 2500000.00\nIT Gross Spend (A+F): 2500000.00\nGross Investment Current CBA: 3000000.00'},
+    {lbl:"Child Project / Pod / Squad — static блок null; Planview ключует только Standalone Project / Delivery Program (*13)",
+     req:'{\n  "name": "get_financial_attributes",\n  "arguments": {\n    "unitId": "034233_v1"\n  }\n}',
+     rtype:"warn",
+     res:'unit: 034233_v1\naggregated: false\ncurrency: CAD\nIT Gross Spent YTD: null\nIT Gross Spend BOY: null\nIT Gross Spend (A+F): null\nGross Investment Current CBA: null'},
+    {lbl:"Portfolio / GBU — NO_DATA (unit search limitation, SC 1 boundary)",
+     req:'{\n  "name": "get_financial_attributes",\n  "arguments": {\n    "unitId": "PORTFOLIO-001"\n  }\n}',
+     rtype:"err",
+     res:'error: NO_DATA \u2014 no annual budget data found for unit: PORTFOLIO-001.'}
+  ]},
+  {tool:"get_unit_costs",cases:[
+    {lbl:"Labor monthly Q4 2026 (SC 6)",
+     req:'{\n  "name": "get_unit_costs",\n  "arguments": {\n    "unitId": "034233",\n    "from": "2026-10",\n    "to": "2026-12",\n    "breakdown": "labor",\n    "granularity": "month"\n  }\n}',
+     rtype:"ok",
+     res:'unit: 034233\nperiod: 2026-10 to 2026-12\ncurrency: CAD\ngranularity: month\n\nLabor:\n  monthly:\n    2026-10 | forecast: 96000.00 CAD | actual: 94200.00 CAD | variance: -1800.00 CAD\n    2026-11 | forecast: 96000.00 CAD | actual: 97500.00 CAD | variance: 1500.00 CAD\n    2026-12 | forecast: 96000.00 CAD | actual: null CAD | variance: null CAD\n  year totals:\n    2026 | forecast: 1152000.00 CAD | actual: 191700.00 CAD | total: 1152000.00 CAD'},
+    {lbl:"Каталог типов недоступен — warnings в payload (SC 6 \xb7 warnings)",
+     req:'{\n  "name": "get_unit_costs",\n  "arguments": {\n    "unitId": "034233",\n    "from": "2026-01",\n    "to": "2026-12",\n    "breakdown": "both",\n    "granularity": "month"\n  }\n}',
+     rtype:"warn",
+     res:'unit: 034233\nperiod: 2026-01 to 2026-12\ncurrency: CAD\ngranularity: month\nwarnings:\n  - cost type catalog could not be loaded; cost type names may be missing\n\ncost type 1:\n  monthly:\n    2026-01 | forecast: 96000.00 CAD | actual: 94200.00 CAD | variance: -1800.00 CAD\n    ...\n  year totals:\n    2026 | forecast: 1152000.00 CAD | actual: 1092000.00 CAD | total: 1152000.00 CAD'},
+    {lbl:"Накопительно, оба вида затрат (SC 7 + SC 9)",
+     req:'{\n  "name": "get_unit_costs",\n  "arguments": {\n    "unitId": "034233",\n    "from": "2026-01",\n    "to": "2026-03",\n    "breakdown": "both",\n    "granularity": "cumulative"\n  }\n}',
+     rtype:"ok",
+     res:'unit: 034233\nperiod: 2026-01 to 2026-03\ncurrency: CAD\ngranularity: cumulative\n\nLabor:\n  cumulative:\n    2026-01 | forecast: 96000.00 CAD | actual: 94200.00 CAD | variance: -1800.00 CAD\n    2026-02 | forecast: 192000.00 CAD | actual: 188400.00 CAD | variance: -3600.00 CAD\n    2026-03 | forecast: 288000.00 CAD | actual: 282600.00 CAD | variance: -5400.00 CAD\n  year totals:\n    2026 | forecast: 1152000.00 CAD | actual: 282600.00 CAD | total: 1152000.00 CAD\n\nConsultants:\n  cumulative:\n    2026-01 | forecast: 92000.00 CAD | actual: 92000.00 CAD | variance: 0.00 CAD\n    2026-02 | forecast: 184000.00 CAD | actual: 184000.00 CAD | variance: 0.00 CAD\n    2026-03 | forecast: 276000.00 CAD | actual: 276000.00 CAD | variance: 0.00 CAD\n  year totals:\n    2026 | forecast: 1104000.00 CAD | actual: 276000.00 CAD | total: 1104000.00 CAD'}
+  ]},
+  {tool:"get_working_hours_calendar",cases:[
+    {lbl:"Вендор + страна найдены — vendor+country fallback (SC 4)",
+     req:'{\n  "name": "get_working_hours_calendar",\n  "arguments": {\n    "year": 2026,\n    "country": "Canada",\n    "vendor": "EPAM"\n  }\n}',
+     rtype:"ok",
+     res:'year: 2026\nresolvedFrom: vendor+country\ncountry: Canada\nvendor: EPAM\nworking hours (hours/month):\n  JANUARY: 168.0\n  FEBRUARY: 152.0\n  MARCH: 168.0\n  APRIL: 160.0\n  MAY: 168.0\n  JUNE: 168.0\n  JULY: 168.0\n  AUGUST: 168.0\n  SEPTEMBER: 160.0\n  OCTOBER: 184.0\n  NOVEMBER: 160.0\n  DECEMBER: 168.0\n  total: 1984.0'},
+    {lbl:"Страна не найдена — откат к systemDefault (SC 4 \xb7 *4 fallback)",
+     req:'{\n  "name": "get_working_hours_calendar",\n  "arguments": {\n    "year": 2026,\n    "country": "Atlantis"\n  }\n}',
+     rtype:"warn",
+     res:'year: 2026\nresolvedFrom: systemDefault\ncountry: null\nvendor: null\nworking hours (hours/month):\n  JANUARY: 160.0\n  FEBRUARY: 160.0\n  MARCH: 160.0\n  APRIL: 160.0\n  MAY: 160.0\n  JUNE: 160.0\n  JULY: 160.0\n  AUGUST: 160.0\n  SEPTEMBER: 160.0\n  OCTOBER: 160.0\n  NOVEMBER: 160.0\n  DECEMBER: 160.0\n  total: 1920.0'}
+  ]},
+  {tool:"get_rate_card",cases:[
+    {lbl:"Несколько типов на одну роль и локацию (SC 3)",
+     req:'{\n  "name": "get_rate_card",\n  "arguments": {\n    "vendor": "EPAM",\n    "location": "Offshore",\n    "role": "Senior Software Engineer"\n  }\n}',
+     rtype:"ok",
+     res:'rate cards (2):\n\n  vendor: EPAM | location: Offshore | role: Senior Software Engineer | type: Blended\n    rate: 45.00 CAD/hr from 2026-01-01 to 2026-12-31\n\n  vendor: EPAM | location: Offshore | role: Senior Software Engineer | type: Actual\n    rate: 41.50 CAD/hr from 2026-01-01 to 2026-12-31'},
+    {lbl:"Нет совпадений по фильтру — NO_DATA (*15 boundary)",
+     req:'{\n  "name": "get_rate_card",\n  "arguments": {\n    "role": "UnknownRole"\n  }\n}',
+     rtype:"err",
+     res:'error: NO_DATA \u2014 no rate cards found matching the specified criteria.'}
+  ]}
+];
+const RESOURCE_EXAMPLES=[
+  {uri:"dc://dictionaries/cost-types",
+   lbl:"Иерархия типов затрат, сконфигурированных в DC (*11 / SC 5\u20139)",
+   rtype:"ok",
+   res:'Available budget cost types:\n\n  IT Corp Spend Excl Labour\n    - Consultants\n    - Hardware\n    - Software Licenses\n    - Travel & Expenses\n\n  IT Sustaining Capex\n    - Hardware\n    - Infrastructure\n\n  IT Sustaining Opex\n    - Contingency\n    - Facilities\n\n  Labor\n    - Contractors\n    - Permanent Staff'},
+  {uri:"dc://units/034233/hierarchy",
+   lbl:"Поддерево юнита — Project с дочерними Stream (SC 1, 5\u20139 boundary)",
+   rtype:"ok",
+   res:'Store Technology Refresh (Standalone Project)\n  Mobile POS (Pod)\n    Checkout Module (Squad)\n  Backend Services (Child Project)\n  Infrastructure Enablement (Child Project)'}
+];
+const ERROR_EXAMPLES=[
+  {code:"SERVICE_UNAVAILABLE",ex:"error: SERVICE_UNAVAILABLE \u2014 budget attributes service is not available."},
+  {code:"NO_DATA",ex:"error: NO_DATA \u2014 no annual budget data found for unit: PORTFOLIO-001."},
+  {code:"STALE",ex:"error: STALE \u2014 annual budget data could not be retrieved for unit: 034233, please retry."},
+  {code:"NO_DATA (rate card)",ex:"error: NO_DATA \u2014 no rate cards found matching the specified criteria."}
+];
+(function(){
+  function mkBlock(headText,codeText,cls){
+    const w=el("div","ex-block "+cls);
+    const h=document.createElement("div");h.className="ex-head";h.textContent=headText;w.appendChild(h);
+    const c=document.createElement("code");c.className="ex-pre";c.textContent=codeText;w.appendChild(c);
+    return w;
+  }
+  const exSec=el("div","sec");
+  exSec.appendChild(ed(el("h2",null,"5 \xb7 TOOL INVOCATION EXAMPLES"),"ex.title"));
+  exSec.appendChild(ed(el("p","sub","Реальные MCP-запросы и plain-text ответы из имплементации. Зелёный \u2014 успех, жёлтый \u2014 успех с предупреждением или fallback, красный \u2014 ошибка."),"ex.sub"));
+  EXAMPLES.forEach(function(ex){
+    exSec.appendChild(el("div","ex-tool-hd","\u2192 "+ex.tool));
+    ex.cases.forEach(function(cc){
+      const box=el("div","ex-case");
+      box.appendChild(el("div","ex-case-lbl",cc.lbl));
+      const pair=el("div","ex-pair");
+      pair.appendChild(mkBlock("MCP Request (JSON)",cc.req,"ex-req"));
+      pair.appendChild(mkBlock("Response (plain text)",cc.res,"ex-res-"+cc.rtype));
+      box.appendChild(pair);exSec.appendChild(box);
+    });
+  });
+  exSec.appendChild(el("div","ex-tool-hd","\u2192 Resources (URI \u2192 plain text)"));
+  RESOURCE_EXAMPLES.forEach(function(r){
+    const box=el("div","ex-case");
+    box.appendChild(el("div","ex-case-lbl",r.uri+" \u2014 "+r.lbl));
+    const pair=el("div","ex-pair");
+    pair.appendChild(mkBlock("Resource URI",r.uri,"ex-req"));
+    pair.appendChild(mkBlock("Response (plain text)",r.res,"ex-res-"+r.rtype));
+    box.appendChild(pair);exSec.appendChild(box);
+  });
+  exSec.appendChild(el("div","ex-tool-hd","\u2192 Error Response Contract"));
+  const errBox=el("div","ex-case");
+  const errTbl=el("div","ex-err-tbl");
+  ERROR_EXAMPLES.forEach(function(e){
+    const row=el("div","ex-err-row");
+    row.appendChild(el("span","ex-err-code",e.code));
+    const val=document.createElement("code");val.className="ex-err-val";val.textContent=e.ex;
+    row.appendChild(val);errTbl.appendChild(row);
+  });
+  errBox.appendChild(errTbl);exSec.appendChild(errBox);
+  schema.appendChild(exSec);
+})();
+
+/* ============================ USE CASES ============================ */
+(function(){
+  const schema=document.getElementById("schema");
+
+  /* ---- helpers ---- */
+  function div(cls,txt){const d=document.createElement("div");d.className=cls;if(txt)d.textContent=txt;return d}
+  function pre(txt){const d=document.createElement("div");d.className="uc-step-body";d.textContent=txt;return d}
+  function step(kind,headTxt,bodyTxt){
+    const s=div("uc-step "+kind);
+    s.appendChild(div("uc-step-hd",headTxt));
+    s.appendChild(pre(bodyTxt));
+    return s;
+  }
+  function arrow(){return div("uc-arrow","→")}
+
+  function buildFlow(steps/*[{kind,hd,body}]*/){
+    const n=steps.length;
+    const grid=div("uc-flow steps-"+n);
+    steps.forEach(function(st,i){
+      grid.appendChild(step(st.kind,st.hd,st.body));
+      if(i<n-1) grid.appendChild(arrow());
+    });
+    return grid;
+  }
+
+  function buildCard(sc,title,tag,tagCls,steps,note){
+    const card=div("uc-card");
+    const hd=div("uc-card-hd");
+    const scEl=div("uc-sc","SC "+sc);
+    const titleEl=div("uc-title",title);
+    const tagEl=div("uc-tag "+tagCls,tag);
+    hd.appendChild(scEl);hd.appendChild(titleEl);hd.appendChild(tagEl);
+    card.appendChild(hd);
+    card.appendChild(buildFlow(steps));
+    if(note){card.appendChild(div("uc-note","ℹ "+note));}
+    return card;
+  }
+
+  /* ---- section ---- */
+  const sec=div("uc-section");
+  const secHd=div("uc-section-hd","Runtime Use Cases");
+  sec.appendChild(secHd);
+
+  /* ======================== GROUP 1: HAPPY PATH ======================== */
+  sec.appendChild(div("uc-group-hd","Happy Path — tool returns data"));
+
+  /* SC 1 — Annual budget for a unit */
+  sec.appendChild(buildCard(1,"Annual budget indicators for a unit","Happy Path","ok",[
+    {kind:"user",hd:"User request",
+     body:"What are the annual budget indicators for Delivery Program CTCX-042 in 2025?"},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_financial_attributes(\n  unitId = "CTCX-042",\n  year   = 2025\n)'},
+    {kind:"raw ok",hd:"Raw tool response",
+     body:'unit: CTCX-042\ntype: Delivery Program\nparent: Portfolio Group — CT Digital\nyear: 2025\ncurrency: CAD\n\nannual budget (CAD):\n  forecast: 4800000.00\n  actual:   4320000.00\n  variance: -480000.00\n\nlabor budget (CAD):\n  forecast: 3600000.00\n  actual:   3240000.00\n\nother costs (CAD):\n  forecast: 1200000.00\n  actual:    1080000.00'},
+    {kind:"answer",hd:"Claude answer",
+     body:"Delivery Program CTCX-042 (CT Digital portfolio) has spent 4,320,000 CAD of its 4,800,000 CAD annual forecast — 90% consumed with a -480,000 CAD unfavourable variance. Labor accounts for 3,240,000 CAD (75%) and other costs 1,080,000 CAD (25%)."}
+  ],"Uses get_financial_attributes. Year-level summary only; for monthly breakdown use get_unit_costs."));
+
+  /* SC 3 — Rate card lookup */
+  sec.appendChild(buildCard(3,"Rate card lookup for a vendor/role","Happy Path","ok",[
+    {kind:"user",hd:"User request",
+     body:"What is the rate for a Senior Developer at TechCorp working onsite in Toronto?"},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_rate_card(\n  vendor       = "TechCorp",\n  location     = "Toronto",\n  role         = "Senior Developer",\n  rateCardType = null\n)'},
+    {kind:"raw ok",hd:"Raw tool response",
+     body:'rate cards (1):\n\n  vendor: TechCorp | location: Toronto | role: Senior Developer | type: Fixed\n    rate: 95.00 CAD/hr from 2024-01-01 to 2024-12-31\n    rate: 98.00 CAD/hr from 2025-01-01'},
+    {kind:"answer",hd:"Claude answer",
+     body:"TechCorp Senior Developer (Toronto, Fixed rate) bills at 98.00 CAD/hr effective January 2025, up from 95.00 CAD/hr in 2024."}
+  ],"All filters are optional substring-matches (case-insensitive). Omit any filter to broaden results."));
+
+  /* SC 4 — Working hours calendar */
+  sec.appendChild(buildCard(4,"Working hours calendar for a country","Happy Path","ok",[
+    {kind:"user",hd:"User request",
+     body:"How many working hours are there in each month of 2025 for Canada?"},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_working_hours_calendar(\n  year    = 2025,\n  country = "Canada",\n  vendor  = null\n)'},
+    {kind:"raw ok",hd:"Raw tool response",
+     body:'year: 2025\nresolvedFrom: country\ncountry: Canada\nvendor: null\nworking hours (hours/month):\n  JANUARY: 168.0\n  FEBRUARY: 152.0\n  MARCH: 168.0\n  APRIL: 160.0\n  MAY: 168.0\n  JUNE: 160.0\n  JULY: 168.0\n  AUGUST: 168.0\n  SEPTEMBER: 168.0\n  OCTOBER: 176.0\n  NOVEMBER: 160.0\n  DECEMBER: 152.0\n  total: 1968.0'},
+    {kind:"answer",hd:"Claude answer",
+     body:"Canada's 2025 working calendar totals 1,968 hours. Lightest months are February and December (152 h each); heaviest is October (176 h). resolvedFrom=country confirms the calendar was matched by country code."}
+  ],"If vendor+country both match a record that record wins; otherwise falls back to country, then organisational default."));
+
+  /* SC 5 — Other costs list (monthly) */
+  sec.appendChild(buildCard(5,"Other costs list — monthly breakdown","Happy Path","ok",[
+    {kind:"user",hd:"User request",
+     body:"Show me the monthly other-costs breakdown for unit CTCX-042 in 2025."},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_unit_costs(\n  unitId      = "CTCX-042",\n  from        = "2025-01",\n  to          = "2025-12",\n  breakdown   = "other",\n  granularity = "month"\n)'},
+    {kind:"raw ok",hd:"Raw tool response",
+     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-12\ncurrency: CAD\ngranularity: month\n\nSoftware Licenses:\n  monthly:\n    2025-01 | forecast: 18000.00 CAD | actual: 17500.00 CAD | variance: -500.00 CAD\n    2025-02 | forecast: 18000.00 CAD | actual: 18200.00 CAD | variance: 200.00 CAD\n    ...\n  year totals:\n    2025 | forecast: 216000.00 CAD | actual: 211000.00 CAD | total: 211000.00 CAD\n\nTravel & Expenses:\n  monthly:\n    2025-01 | forecast: 5000.00 CAD | actual: 3200.00 CAD | variance: -1800.00 CAD\n    ...'},
+    {kind:"answer",hd:"Claude answer",
+     body:'CTCX-042 "Other costs" in 2025 — Software Licenses: 211,000 CAD actual vs 216,000 CAD forecast (−5,000 favourable). Travel & Expenses are tracking below forecast in Jan. Full monthly detail available above.'}
+  ],"breakdown=\"other\" filters to non-labor cost types. Use breakdown=\"labor\" or omit for all types."));
+
+  /* SC 6 — Labor cost monthly + warnings */
+  sec.appendChild(buildCard(6,"Labor cost monthly with catalog warnings","Happy Path","ok",[
+    {kind:"user",hd:"User request",
+     body:"What is the monthly labor cost for unit CTCX-042 in Q1 2025?"},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_unit_costs(\n  unitId      = "CTCX-042",\n  from        = "2025-01",\n  to          = "2025-03",\n  breakdown   = "labor",\n  granularity = "month"\n)'},
+    {kind:"raw warn",hd:"Raw tool response (with warning)",
+     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-03\ncurrency: CAD\ngranularity: month\nwarnings:\n  - cost type id=42 not found in catalog\n\nLabor:\n  monthly:\n    2025-01 | forecast: 300000.00 CAD | actual: 288000.00 CAD | variance: -12000.00 CAD\n    2025-02 | forecast: 300000.00 CAD | actual: 295000.00 CAD | variance: -5000.00 CAD\n    2025-03 | forecast: 300000.00 CAD | actual: 310000.00 CAD | variance: 10000.00 CAD\n  year totals:\n    2025 | forecast: 3600000.00 CAD | actual: 3240000.00 CAD | total: 3240000.00 CAD'},
+    {kind:"answer",hd:"Claude answer",
+     body:"Q1 2025 labor for CTCX-042: Jan −12k, Feb −5k, Mar +10k variance. Q1 actuals 893,000 CAD vs 900,000 CAD forecast (−7k). ⚠ Note: cost type id=42 was not found in the catalog and may not be reflected in these totals."}
+  ],"Warnings appear inline in the raw response and must be surfaced to the user."));
+
+  /* SC 7 — Labor cost cumulative */
+  sec.appendChild(buildCard(7,"Labor cost — cumulative granularity","Happy Path","ok",[
+    {kind:"user",hd:"User request",
+     body:"Show me cumulative labor spend for CTCX-042 through H1 2025."},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_unit_costs(\n  unitId      = "CTCX-042",\n  from        = "2025-01",\n  to          = "2025-06",\n  breakdown   = "labor",\n  granularity = "cumulative"\n)'},
+    {kind:"raw ok",hd:"Raw tool response",
+     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-06\ncurrency: CAD\ngranularity: cumulative\n\nLabor:\n  cumulative:\n    2025-01 | forecast: 300000.00 CAD | actual: 288000.00 CAD | variance: -12000.00 CAD\n    2025-02 | forecast: 600000.00 CAD | actual: 583000.00 CAD | variance: -17000.00 CAD\n    2025-03 | forecast: 900000.00 CAD | actual: 893000.00 CAD | variance: -7000.00 CAD\n    2025-04 | forecast: 1200000.00 CAD | actual: 1185000.00 CAD | variance: -15000.00 CAD\n    2025-05 | forecast: 1500000.00 CAD | actual: 1490000.00 CAD | variance: -10000.00 CAD\n    2025-06 | forecast: 1800000.00 CAD | actual: 1778000.00 CAD | variance: -22000.00 CAD'},
+    {kind:"answer",hd:"Claude answer",
+     body:"Through June 2025, CTCX-042 has spent 1,778,000 CAD of 1,800,000 CAD labor forecast — 99% consumed with a cumulative −22,000 CAD variance. Burn rate has been consistent ~297k/month."}
+  ],"Cumulative mode: each row is a running total — values accumulate across months in the response."));
+
+  /* SC 8 — Other cost by type */
+  sec.appendChild(buildCard(8,"Other costs filtered to a single type","Happy Path","ok",[
+    {kind:"user",hd:"User request",
+     body:"How much did CTCX-042 spend on Software Licenses in 2025?"},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_unit_costs(\n  unitId      = "CTCX-042",\n  from        = "2025-01",\n  to          = "2025-12",\n  breakdown   = "Software Licenses",\n  granularity = "month"\n)'},
+    {kind:"raw ok",hd:"Raw tool response",
+     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-12\ncurrency: CAD\ngranularity: month\n\nSoftware Licenses:\n  monthly:\n    2025-01 | forecast: 18000.00 CAD | actual: 17500.00 CAD | variance: -500.00 CAD\n    ...\n  year totals:\n    2025 | forecast: 216000.00 CAD | actual: 211000.00 CAD | total: 211000.00 CAD'},
+    {kind:"answer",hd:"Claude answer",
+     body:"CTCX-042 spent 211,000 CAD on Software Licenses in 2025, slightly under the 216,000 CAD forecast (−5,000 CAD favourable)."}
+  ],"breakdown matches cost type names by substring (case-insensitive)."));
+
+  /* SC 9 — Other cost cumulative */
+  sec.appendChild(buildCard(9,"Other costs — cumulative spend tracking","Happy Path","ok",[
+    {kind:"user",hd:"User request",
+     body:"Show cumulative other costs for CTCX-042 through September 2025."},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_unit_costs(\n  unitId      = "CTCX-042",\n  from        = "2025-01",\n  to          = "2025-09",\n  breakdown   = "other",\n  granularity = "cumulative"\n)'},
+    {kind:"raw ok",hd:"Raw tool response",
+     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-09\ncurrency: CAD\ngranularity: cumulative\n\nSoftware Licenses:\n  cumulative:\n    2025-01 | forecast: 18000.00 CAD | actual: 17500.00 CAD | variance: -500.00 CAD\n    2025-02 | forecast: 36000.00 CAD | actual: 35700.00 CAD | variance: -300.00 CAD\n    ...\n    2025-09 | forecast: 162000.00 CAD | actual: 158400.00 CAD | variance: -3600.00 CAD'},
+    {kind:"answer",hd:"Claude answer",
+     body:"Through September 2025, CTCX-042 has spent 158,400 CAD on Software Licenses of a 162,000 CAD 9-month forecast (−3,600 CAD favourable, 97.8% consumed)."}
+  ]));
+
+  /* ======================== GROUP 2: COMPOSITION ======================== */
+  sec.appendChild(div("uc-group-hd","Composition — multi-tool scenarios"));
+
+  /* SC 17 — Forecast vs actuals */
+  sec.appendChild(buildCard(17,"Forecast vs actuals: rate × hours vs reported costs","Composition","compose",[
+    {kind:"user",hd:"User request",
+     body:"For CTCX-042 in January 2025, does the reported labor cost match the team's rate card and working hours?"},
+    {kind:"tool",hd:"Tool invocations (3)",
+     body:'① get_unit_costs(unitId="CTCX-042", from="2025-01", to="2025-01",\n   breakdown="labor", granularity="month")\n\n② get_rate_card(vendor="TechCorp", role="Senior Developer",\n   location="Toronto")\n\n③ get_working_hours_calendar(year=2025, country="Canada")'},
+    {kind:"raw ok",hd:"Aggregated raw responses",
+     body:'① Labor Jan 2025: actual=288000.00 CAD\n\n② rate: 98.00 CAD/hr from 2025-01-01\n\n③ JANUARY: 168.0 hours'},
+    {kind:"answer",hd:"Claude answer",
+     body:"At 98 CAD/hr × 168 h = 16,464 CAD per person. 288,000 CAD ÷ 16,464 ≈ 17.5 FTE-equivalent. If the team has ~17–18 people this aligns. The reported labor is consistent with the rate card and working hours calendar."}
+  ],"Three separate tool calls; Claude composes the result. No single tool provides this cross-reference."));
+
+  /* ======================== GROUP 3: BOUNDARY / NOT FEASIBLE ======================== */
+  sec.appendChild(div("uc-group-hd","Boundary & Not-Feasible scenarios"));
+
+  /* *10 — No permission */
+  sec.appendChild(buildCard("*10","No permission — unit not accessible","Boundary","boundary",[
+    {kind:"user",hd:"User request",
+     body:"What is the annual budget for unit SECURE-99?"},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_financial_attributes(\n  unitId = "SECURE-99",\n  year   = 2025\n)'},
+    {kind:"raw err",hd:"Raw tool response",
+     body:'error: NO_DATA — no financial attributes found for unit: SECURE-99, year: 2025.'},
+    {kind:"answer",hd:"Claude answer",
+     body:"No budget data is available for unit SECURE-99 in 2025. This may mean the unit does not exist, has no data for that year, or your account does not have access to it."}
+  ],"The MCP layer returns NO_DATA for access-denied and missing-unit alike — it does not distinguish the two."));
+
+  /* *11 — Category not synced */
+  sec.appendChild(buildCard("*11","Cost category not synced — partial data with warning","Boundary","boundary",[
+    {kind:"user",hd:"User request",
+     body:"Show all costs for CTCX-042 in January 2025."},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_unit_costs(\n  unitId      = "CTCX-042",\n  from        = "2025-01",\n  to          = "2025-01",\n  breakdown   = null,\n  granularity = "month"\n)'},
+    {kind:"raw warn",hd:"Raw tool response (partial)",
+     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-01\ncurrency: CAD\ngranularity: month\nwarnings:\n  - cost type id=42 not found in catalog\n\nLabor:\n  monthly:\n    2025-01 | forecast: 300000.00 CAD | actual: 288000.00 CAD | variance: -12000.00 CAD\n  year totals:\n    2025 | forecast: 3600000.00 CAD | actual: 3240000.00 CAD | total: 3240000.00 CAD\n\ncost type 42:\n  monthly:\n    2025-01 | forecast: 5000.00 CAD | actual: null CAD | variance: null CAD'},
+    {kind:"answer",hd:"Claude answer",
+     body:"January 2025 data for CTCX-042 is partially available. Labor: 288,000 CAD actual. ⚠ Cost type id=42 is present in the budget but not in the catalog — its name is unknown and its actual/variance values are null (not yet synced)."}
+  ],"null ≠ 0: a null actual means no data received, not zero spend."));
+
+  /* *12 — Data freshness */
+  sec.appendChild(buildCard("*12","Data freshness — stale or unavailable data","Boundary","boundary",[
+    {kind:"user",hd:"User request",
+     body:"What is the latest labor cost for unit CTCX-042?"},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_unit_costs(\n  unitId      = "CTCX-042",\n  from        = "2025-01",\n  to          = "2025-12",\n  breakdown   = "labor",\n  granularity = "month"\n)'},
+    {kind:"raw err",hd:"Raw tool response",
+     body:'error: STALE — monthly budget data could not be retrieved for unit: CTCX-042, please retry.'},
+    {kind:"answer",hd:"Claude answer",
+     body:"The budget service is temporarily unavailable or returned stale data. Please retry in a few minutes. If the issue persists, the data source may not have been updated yet for this period."}
+  ],"STALE is a transient error — tool threw an exception. Retry is appropriate. NO_DATA is permanent for the given parameters."));
+
+  /* *13 — Zero vs empty (null) */
+  sec.appendChild(buildCard("*13","null ≠ 0 — distinguishing zero spend from no data","Boundary","boundary",[
+    {kind:"user",hd:"User request",
+     body:"Did CTCX-042 have any Travel & Expenses in February 2025?"},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_unit_costs(\n  unitId      = "CTCX-042",\n  from        = "2025-02",\n  to          = "2025-02",\n  breakdown   = "other",\n  granularity = "month"\n)'},
+    {kind:"raw warn",hd:"Raw tool response",
+     body:'unit: CTCX-042\nperiod: 2025-02 to 2025-02\ncurrency: CAD\ngranularity: month\n\nTravel & Expenses:\n  monthly:\n    2025-02 | forecast: 5000.00 CAD | actual: null CAD | variance: null CAD'},
+    {kind:"answer",hd:"Claude answer",
+     body:"Travel & Expenses for February 2025 shows a 5,000 CAD forecast but the actual value is null — meaning no expense data has been received yet, not that the spend was zero. This is likely a data sync delay."}
+  ],'McpFormatUtils.formatMonetary(null) returns the string "null". Claude must not interpret null as 0.00.'));
+
+  /* *14 — Import failure */
+  sec.appendChild(buildCard("*14","Import failure — data not loaded into DC","Boundary","nope",[
+    {kind:"user",hd:"User request",
+     body:"Why is there no budget data for CTCX-042 after the March 2025 import?"},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_unit_costs(\n  unitId      = "CTCX-042",\n  from        = "2025-03",\n  to          = "2025-03",\n  breakdown   = null,\n  granularity = "month"\n)'},
+    {kind:"raw err",hd:"Raw tool response",
+     body:'error: NO_DATA — no monthly budget data found for unit: CTCX-042.'},
+    {kind:"answer",hd:"Claude answer",
+     body:"No budget data is available for CTCX-042 in March 2025. This is typically caused by a failed or incomplete import from the source system. Check the integration pipeline result files or contact the data operations team to verify whether the March import completed successfully."}
+  ],"MCP cannot diagnose the import failure itself — it can only confirm data is absent. Root cause requires checking SFTP result files or integration logs."));
+
+  /* *15 — Attempted edit */
+  sec.appendChild(buildCard("*15","Attempted write/edit — read-only surface","Boundary","nope",[
+    {kind:"user",hd:"User request",
+     body:"Please update the forecast for CTCX-042 to 5,000,000 CAD for 2025."},
+    {kind:"answer",hd:"Claude answer (no tool call)",
+     body:"The Financial MCP surface is read-only. I can retrieve budget data, rate cards, and working hours calendars — but I cannot create, update, or delete any financial records. Changes to forecasts must be made directly in Delivery Central by an authorized user."}
+  ],"No write tools exist. Claude should answer directly without attempting a tool call.",null));
+
+  /* *16 — Cross-screen mismatch */
+  sec.appendChild(buildCard("*16","Cross-screen mismatch — aggregation flag","Boundary","boundary",[
+    {kind:"user",hd:"User request",
+     body:"The annual budget on the unit screen shows 5,000,000 CAD but get_financial_attributes returns 4,800,000 CAD. Why?"},
+    {kind:"tool",hd:"Tool invocation",
+     body:'get_financial_attributes(\n  unitId = "CTCX-042",\n  year   = 2025\n)'},
+    {kind:"raw ok",hd:"Raw tool response",
+     body:'unit: CTCX-042\ntype: Delivery Program\nyear: 2025\ncurrency: CAD\n\nannual budget (CAD):\n  forecast: 4800000.00\n  actual:   4320000.00\n  variance: -480000.00'},
+    {kind:"answer",hd:"Claude answer",
+     body:"The discrepancy may be caused by an aggregation flag in Delivery Central. Some screens show the unit's own budget; others roll up children (Child Projects, Pods, Squads). The MCP tool returns the value stored against the unit itself. If the screen includes child-unit budgets in its total, the figures will differ by the sum of those children."}
+  ],"get_financial_attributes fetches the unit's own record. DC UI screens may aggregate children depending on the aggregation flag setting."));
+
+  /* SC 2 — Monthly breakdown not feasible */
+  sec.appendChild(buildCard(2,"Monthly budget breakdown — not feasible via MCP","Not Feasible","nope",[
+    {kind:"user",hd:"User request",
+     body:"Show me the monthly budget breakdown from the Annual Budget screen for CTCX-042."},
+    {kind:"answer",hd:"Claude answer (no tool call)",
+     body:"The Annual Budget screen in Delivery Central shows a month-by-month breakdown that is stored as annual indicators — not as monthly time-series data. The MCP surface does not expose that breakdown. For monthly forecast/actual figures use get_unit_costs, which reads from the separate Monthly Budget screen data."}
+  ],'get_financial_attributes exposes annual indicators only. The "monthly columns" on the Annual Budget screen are not the same as the monthly cost series returned by get_unit_costs.',null));
+
+  schema.appendChild(sec);
+})();
+
+/* ============================ СТРЕЛКИ ============================ */
+const svg=document.getElementById("arrows"),canvas=document.getElementById("canvas");
+const NS="http://www.w3.org/2000/svg";
+function mk(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e}
+function box(id){const e=document.getElementById("el_"+id);if(!e)return null;
+  const r=e.getBoundingClientRect(),c=canvas.getBoundingClientRect();
+  return{x1:r.left-c.left,x2:r.right-c.left,y:r.top-c.top+r.height/2,t:r.top-c.top,b:r.bottom-c.top}}
+function arrow(a,b,o){o=o||{};
+  const p=[[a.x2,a.y],[a.x2+((b.x1-a.x2)/2),a.y],[a.x2+((b.x1-a.x2)/2),b.y],[b.x1-10,b.y]];
+  const d="M "+p.map(q=>q[0].toFixed(1)+" "+q[1].toFixed(1)).join(" L ");
+  svg.appendChild(mk("path",{d,fill:"none",stroke:o.col||"#bbb","stroke-width":o.w||1.6,
+    "stroke-dasharray":o.dash||"","stroke-linejoin":"round"}));
+  svg.appendChild(mk("path",{d:`M ${b.x1-10} ${b.y-5.5} L ${b.x1} ${b.y} L ${b.x1-10} ${b.y+5.5} z`,fill:o.col||"#bbb"}));
+  if(o.num){const mx=a.x2+((b.x1-a.x2)/2),my=(a.y+b.y)/2;
+    svg.appendChild(mk("circle",{cx:mx,cy:my,r:14,class:"stepnum"}));
+    const tx=mk("text",{x:mx,y:my+4.5,class:"stepnum-t"});tx.textContent=o.num;svg.appendChild(tx);}
+}
+function drawBase(){
+  svg.innerHTML="";svg.setAttribute("width",canvas.scrollWidth);svg.setAttribute("height",canvas.scrollHeight);
+  SECTIONS.forEach(s=>s.rows.forEach(r=>{
+    const T=box(r.id);if(!T)return;
+    if(r.dia){const D=box("dia_"+r.id);if(D){arrow(T,D);r.impl.forEach(i=>{const I=box(i.id);if(I)arrow(D,I)})}}
+    else r.impl.forEach(i=>{const I=box(i.id);if(I)arrow(T,I)});
+    r.out.forEach(o=>{const I=box(o.src),O=box(o.id);if(I&&O)arrow(I,O)});
+  }));
+}
+let cur=null;
+function drawTrace(sp){
+  drawBase();
+  const r=sp.row?SECTIONS.flatMap(s=>s.rows).find(x=>x.id===sp.row):null;
+  if(r){
+    const T=box(r.id);
+    const impls=[...new Set(sp.outs.map(id=>r.out.find(o=>o.id===id).src))];
+    const B5=["5","5a","5b","5c"],B6=["6","6a","6b","6c"];
+    if(r.dia){const D=box("dia_"+r.id);
+      arrow(T,D,{col:"#111",w:3,num:"4"});
+      impls.forEach((i,k)=>{const I=box(i);arrow(D,I,{col:"#111",w:3,num:B5[k]})});
+    } else impls.forEach(i=>arrow(T,box(i),{col:"#111",w:3,num:"4"}));
+    sp.outs.forEach((id,k)=>{const o=r.out.find(x=>x.id===id);arrow(box(o.src),box(id),{col:"#111",w:3,num:B6[k]})});
+  }
+  if(sp.res){const rr=SECTIONS.flatMap(s=>s.rows).find(x=>x.id===sp.res);
+    const T=box(rr.id),I=box(rr.impl[0].id),O=box(rr.out[0].id);
+    arrow(T,I,{col:"#333",w:2.4,dash:"8,5",num:"2"});arrow(I,O,{col:"#333",w:2.4,dash:"8,5"});}
+  (sp.comp||[]).forEach((cid,k)=>{const cr=SECTIONS.flatMap(s=>s.rows).find(x=>x.id===cid);
+    const A=box(cr.id),B=box(r.impl[0].id);if(A&&B)arrow(A,B,{col:"#333",w:2.2,dash:"8,5",num:["3a","3b"][k]});});
+}
+/* подсветка */
+function setDim(sp){
+  document.querySelectorAll(".tool,.impl,.out,.dia,.note").forEach(e=>e.classList.remove("dim","hot"));
+  if(!sp)return;
+  const keep=new Set();
+  const rows=SECTIONS.flatMap(s=>s.rows);
+  const add=r=>{keep.add("el_"+r.id);if(r.dia)keep.add("el_dia_"+r.id)};
+  const r=sp.row?rows.find(x=>x.id===sp.row):null;
+  if(r){add(r);sp.outs.forEach(id=>{keep.add("el_"+id);keep.add("el_"+r.out.find(o=>o.id===id).src)});}
+  if(sp.res){const rr=rows.find(x=>x.id===sp.res);add(rr);keep.add("el_"+rr.impl[0].id);keep.add("el_"+rr.out[0].id);}
+  (sp.comp||[]).forEach(c=>add(rows.find(x=>x.id===c)));
+  (sp.con||[]).forEach(c=>keep.add("el_"+c));
+  document.querySelectorAll(".tool,.impl,.out,.dia").forEach(e=>{if(!keep.has(e.id))e.classList.add("dim")});
+  document.querySelectorAll(".row").forEach(row=>{
+    const id=row.id.replace("row_","");
+    const on=(r&&r.id===id)||sp.res===id||(sp.comp||[]).includes(id);
+    row.querySelectorAll(".note").forEach(n=>{if(!on)n.classList.add("dim")});
+  });
+}
+/* панель */
+const P=document.getElementById("panel"),PT=document.getElementById("p-title"),PS=document.getElementById("p-sub");
+function panel(sp){
+  if(!sp){PT.textContent="Сценарий не выбран";
+    PS.textContent="Выберите сценарий сверху — на схеме подсветится путь, здесь появятся шаги и итоговый ответ.";
+    P.innerHTML="";return}
+  PT.textContent=sp.sid+" — "+sp.title;
+  PS.textContent={ok:"Реализуем на текущей поверхности.",no:"Не реализуем — ответ строится как честный отказ.",
+    part:"Частично: часть вопроса закрывается контрактом, часть не имеет источника."}[sp.st];
+  P.innerHTML="";
+  const K="scen."+sp.sid+".";
+  P.appendChild(ed(el("div","q",sp.q),K+"q"));
+  sp.steps.forEach((s,i)=>{const d=el("div","step");
+    d.innerHTML='<span class="n">'+s[0]+'</span>';
+    d.appendChild(ed(el("b",null,s[1]),K+"step."+i+".t"));
+    d.appendChild(ed(el("p",null,s[2]),K+"step."+i+".p"));P.appendChild(d)});
+  const a=el("div","ans "+({ok:"green",no:"redbg",part:"yellow"}[sp.st]));
+  a.appendChild(ed(el("b",null,sp.st==="ok"?"Ответ пользователю":"Что Клод говорит вместо этого"),K+"ans.t"));
+  sp.ans.forEach((x,i)=>a.appendChild(ed(el("p",null,x),K+"ans."+i)));
+  P.appendChild(a);
+  applyEdits();
+  if(sp.con&&sp.con.length){
+    const w=el("div","also");w.appendChild(el("b",null,"Правила контракта, формирующие ответ"));
+    sp.con.forEach(c=>{const o=CONTRACT.find(x=>x.id===c);const s=el("span",null,o.t);
+      s.onclick=()=>{const e=document.getElementById("el_"+c);
+        e.scrollIntoView({behavior:"smooth",block:"center"});
+        e.classList.add("hot");setTimeout(()=>e.classList.remove("hot"),1600)};
+      w.appendChild(s)});
+    P.appendChild(w);
+  }
+}
+/* управление */
+const pick=document.getElementById("pick");
+pick.appendChild(el("option",null,"— не выбран —")).value="";
+S.forEach((s,i)=>{const o=el("option",null,s.sid+" · "+s.title);o.value=i;pick.appendChild(o)});
+pick.onchange=()=>{const v=pick.value;cur=v===""?null:S[+v];setDim(cur);panel(cur);cur?drawTrace(cur):drawBase()};
+document.getElementById("clear").onclick=()=>{pick.value="";cur=null;setDim(null);panel(null);drawBase()};
+document.getElementById("save").onclick=()=>{
+  // правки живут в EDITS, а не в DOM: страница перерисовывается из данных при загрузке,
+  // поэтому в копию вшивается актуальный EDITS, а отрисованный DOM очищается
+  const cl=document.documentElement.cloneNode(true);
+  ["schema","panel","arrows"].forEach(id=>{const n=cl.querySelector("#"+id);if(n)n.innerHTML=""});
+  const sc=cl.querySelector("script");
+  sc.textContent=sc.textContent.replace("let EDITS={};","let EDITS="+JSON.stringify(EDITS)+";");
+  const b=new Blob(["<!doctype html>\n"+cl.outerHTML],{type:"text/html"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(b);
+  a.download="Financial_MCP_Schema.html";a.click();
+};
+let tm;const redraw=()=>{clearTimeout(tm);tm=setTimeout(()=>{cur?drawTrace(cur):drawBase()},120)};
+window.addEventListener("resize",redraw);
+document.addEventListener("input",e=>{
+  const k=e.target&&e.target.dataset&&e.target.dataset.k;
+  if(k)EDITS[k]=e.target.textContent;
+  redraw();
+});
+requestAnimationFrame(()=>{drawBase();applyEdits();panel(null)});
 </script>
 </body>
 </html>
