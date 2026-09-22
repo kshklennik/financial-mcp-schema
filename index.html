@@ -236,7 +236,7 @@ const SECTIONS=[
     p:["Unit search limitation, и Resource Plan задокументирован только до уровня Portfolio Group."]}]},
 
  {id:"rc",tool:"dc_ps_rate_card_get",
-  params:["params:","– vendor (optional)","– country (optional)","– location (optional)","– role (optional)","– rateCardType (optional)","– limit: 1–100 (default 50)","(все — partial-match, AND'd)"],
+  params:["params:","– vendor (optional)","– country (optional)","– location (optional)","– role (optional)","– rateCardType (optional)","(все фильтры — partial-match, AND'd)","– limit: 1–100 (default 50)","– offset: 0-based (default 0) — пагинация","sorted: vendor → country → location → role → type"],
   note:{c:"yellow",t:"Not unit-scoped:",p:["параметра unit нет, значит ветки Per Unit Type тоже нет. Доступ на уровне организации — это проверка прав, а не уровень."]},
   impl:[{id:"rc1",label:"Organization-wide rate card dictionary",b:[NU]}],
   out:[
@@ -334,7 +334,7 @@ const S=[
  steps:[["2","Юнит не участвует","Рейт-карты — организационный справочник, поэтому ресурс иерархии не читается и ветки Per Unit Type нет."],
  ["3","Модель выбирает dc_ps_rate_card_get","Все параметры — опциональные partial-match фильтры. Передаются vendor, role, location (тип локации), country — city не является параметром."],
  ["4","Авторизация, а не резолв","Вызову нужна роль Rates Editor на организационном юните. Это проверка прав на глобальном справочнике, а не уровень иерархии."],
- ["6","Возвращаются все совпадения","Rate Card Type и Vendor меняют цифру, поэтому payload сохраняет все подходящие ставки с их периодами, а не выбирает одну."],
+ ["6","Возвращаются все совпадения, отсортированные","Rate Card Type и Vendor меняют цифру, поэтому payload сохраняет все подходящие ставки с их периодами, а не выбирает одну. Результат отсортирован по vendor → country → location → role → type. Если совпадений больше лимита — заголовок покажет диапазон «1–50 of N»; следующую страницу — через offset."],
  ["7","Валюта явная","Каждая ставка несёт CAD и свои Start / End даты, поэтому ответ нельзя прочитать как одно вневременное число."],
  ["8","Клод перечисляет совпадения","Вендор, тип рейт-карты и период для каждой — выбирает пользователь."],
  ["!","Если период пересекает смену ставки","Возвращаются обе применимые ставки со своими диапазонами. Усреднить их — значит выдумать ставку, которой нет ни в одной рейт-карте."]],
@@ -635,6 +635,10 @@ const EXAMPLES=[
      req:'{\n  "name": "dc_ps_rate_card_get",\n  "arguments": {\n    "vendor": "EPAM",\n    "location": "Offshore",\n    "role": "Senior Software Engineer"\n  }\n}',
      rtype:"ok",
      res:'rate cards (2):\n\n  vendor: EPAM | country: India | location: Offshore | role: Senior Software Engineer | type: Blended\n    rate: 45.00 CAD/hr from 2026-01 to 2026-12\n\n  vendor: EPAM | country: India | location: Offshore | role: Senior Software Engineer | type: Actual\n    rate: 41.50 CAD/hr from 2026-01 to 2026-12'},
+    {lbl:"Пагинация — вторая страница (SC 3)",
+     req:'{\n  "name": "dc_ps_rate_card_get",\n  "arguments": {\n    "limit": 2,\n    "offset": 2\n  }\n}',
+     rtype:"ok",
+     res:'rate cards (3-4 of 10):\n\n  vendor: EPAM | country: Canada | location: Onsite | role: Business Analyst | type: Blended\n    rate: 72.00 CAD/hr from 2026-01\n\n  vendor: EPAM | country: Canada | location: Onsite | role: Project Manager | type: Blended\n    rate: 88.00 CAD/hr from 2026-01'},
     {lbl:"Нет совпадений по фильтру — NO_DATA",
      req:'{\n  "name": "dc_ps_rate_card_get",\n  "arguments": {\n    "role": "UnknownRole"\n  }\n}',
      rtype:"err",
