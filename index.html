@@ -217,8 +217,8 @@ const SECTIONS=[
     p:["Unit search limitation — same root cause as get_health_data / get_unit_risks."]}]},
 
  {id:"uc",tool:"dc_ps_unit_costs_get",fill:"pink",
-  params:["params:","– unitId (required)","– startMonth YYYY-MM (optional)","– endMonth YYYY-MM (optional)","– breakdown: LABOR | OTHER | BOTH","– granularity: MONTH | CUMULATIVE"],
-  note:{c:"green",t:"Merged:",p:["was get_labor_cost + get_other_costs. Один концепт DC — costs юнита, разделённые на Labor и Other — значит один тул."]},
+  params:["params:","– unitId (required)","– startMonth YYYY-MM (optional)","– endMonth YYYY-MM (optional)"],
+  note:{c:"green",t:"Data source: PlanView",p:["Официальный отчётный бюджет из PlanView — Forecast, Actual, Variance. Это НЕ расчёт Resource Plan. Для позиций, загрузок и стоимости из рейт-карт — dc_ps_resource_plan_get."]},
   dia:"Per Unit Type",
   impl:[{id:"uc1",label:"Standalone Project / Delivery Program<br>Child Project / Pod / Squad",b:[U,H]},
         {id:"uc2",label:"Portfolio Group / Program",b:[H]},
@@ -262,7 +262,21 @@ const SECTIONS=[
     p:["Модель узнаёт тип юнита до вызова и может сказать «Corporate Function не поддерживается» без провального round-trip."]},
    {id:"o15",src:"hi1",c:"green",tag:"resolved",t:"Indented tree: RootName (type)",
     p:["Возвращает дерево с отступами 2 пробела. Тип в скобках — если null, то не выводится. Только активные юниты."]}
-  ]}
+  ]},
+
+ {id:"rp",tool:"dc_ps_resource_plan_get",fill:"pink",
+  params:["params:","– unitId (required)","– breakdown: LABOR | OTHER | BOTH (default BOTH)","– granularity: MONTH (default) | CUMULATIVE","– startMonth YYYY-MM (optional)","– endMonth YYYY-MM (optional)","MONTH: позиции + workload + position costs + monthly unit costs + current-month summary","CUMULATIVE: позиции + workload + position costs + past/current/forecast totals"],
+  note:{c:"green",t:"Data source: Resource Plan (DC calculation)",p:["Стоимость вычисляется DC из рейт-карт × загрузки × рабочих часов. Это НЕ отчётный факт PlanView. Для бюджета PlanView — dc_ps_unit_costs_get."]},
+  dia:"Per Unit Type",
+  impl:[{id:"rp1",label:"Standalone Project / Delivery Program<br>Child Project / Pod / Squad",b:[U,H]},
+        {id:"rp2",label:"Corporate Function / ORGANIZATION",b:[H]}],
+  out:[
+   {id:"o19",src:"rp1",c:"green",tag:"SC 6 · Resource Plan",t:"Positions + workload + costs",
+    p:["Позиции с загрузкой по месяцам, стоимость каждой позиции по месяцам, monthly unit costs time series, current-month или cumulative cost summary."]},
+   {id:"o20",src:"rp1",c:"yellow",tag:"graceful degradation",t:"Missing cost data does not block the plan",
+    p:["Если один из cost-сервисов недоступен — данные Resource Plan (позиции, загрузки) всё равно возвращаются без стоимостной секции."]},
+   {id:"o21",src:"rp2",c:"magenta",tag:"boundary",t:"UNIT_NOT_SUPPORTED",
+    p:["Resource Plan задокументирован только до уровня Portfolio Group."]}]}
 ]},
 
 {id:"res",title:"2 · RESOURCES",sub:"Контекст, который прикрепляет клиент, а не вызывает модель. Стабильный справочник — читается один раз и переиспользуется. (Иерархия юнита перенесена в Tools как dc_ps_unit_hierarchy_get.)",rows:[
@@ -296,7 +310,7 @@ const CONTRACT=[
  {id:"c1",c:"green",tag:"*13",t:"Typed nulls, never 0",p:["Отсутствующие данные возвращаются как null с причиной. Коэрция пустого в 0 у annual-фида происходит выше по потоку — значит помечай её как коэрцию, а не выдавай за отчётную цифру."]},
  {id:"c2",c:"green",tag:"*12",t:"Provenance on every response",p:["source feed + lastSyncedAt на каждый блок. Monthly и Annual синкаются независимо, поэтому один ответ законно смешивает две даты свежести."]},
  {id:"c3",c:"green",tag:"*10 · *11",t:"Semantic errors, not empty results",p:["PERMISSION_DENIED — с названием недостающей роли","UNIT_NOT_SUPPORTED · NO_DATA · OUT_OF_SCOPE · STALE","Пустой массив, который читается как ноль, — главный способ ввести в заблуждение."]},
- {id:"c4",c:"green",tag:"*15",t:"readOnlyHint on all five tools",p:["Ни одного write-тула. Rate Cards и Other Costs редактируются в DC — тул называет экран и роль вместо этого."]},
+ {id:"c4",c:"green",tag:"*15",t:"readOnlyHint on all six tools",p:["Ни одного write-тула. Rate Cards и Other Costs редактируются в DC — тул называет экран и роль вместо этого."]},
  {id:"c5",c:"green",tag:"*11",t:"Explicit currency and unit",p:["Каждая сумма несёт CAD, каждое значение часов — свой уровень fallback. *11: не-IT категории возвращают OUT_OF_SCOPE, а не приближение."]},
  {id:"c6",c:"magenta",tag:"*12 · *14",t:"Still not answerable",p:["*12 про свежесть и *14 про диагностику импорта требуют статуса джобы PV-агента и логов, которые не выставлены. *13 закрывается контрактом выше, а не тулом."]}];
 
@@ -370,14 +384,14 @@ const S=[
  "Это заведено вручную в DC ролью Rates Mapper или Editor — из Planview не приходит. Список включает записи дочерних юнитов X."]},
 
 {sid:"SC 6",st:"ok",title:"Labor Cost за месяц / роль / человека",q:"Сколько стоила позиция Senior Java Developer на юните X в ноябре?",
- row:"uc",outs:["o5","o6"],res:"hi",con:["c1","c5"],
+ row:"rp",outs:["o19","o20"],res:"hi",con:["c1","c5"],
  steps:[["2","Ресурс иерархии подтверждает уровень","Финансы Resource Plan задокументированы до уровня Portfolio Group включительно, так что X как Standalone Project (или Delivery Program) означает, что вызов зарезолвится."],
- ["3","breakdown=LABOR, granularity=MONTH","dc_ps_unit_costs_get(unitId=\"X\", startMonth=\"2024-11\", endMonth=\"2024-11\", breakdown=\"LABOR\", granularity=\"MONTH\")."],
+ ["3","dc_ps_resource_plan_get, а не dc_ps_unit_costs_get","dc_ps_resource_plan_get(unitId=\"X\", breakdown=\"LABOR\", granularity=\"MONTH\", startMonth=\"2024-11\", endMonth=\"2024-11\"). Этот тул возвращает позиции с загрузками и стоимость каждой позиции по месяцам — вычисленную DC из рейт-карт. dc_ps_unit_costs_get вернул бы отчётный бюджет PlanView — другой источник, другая цифра."],
  ["5","Уровень = Standalone Project / Delivery Program / Child Project / Pod / Squad","Позиции живут здесь, а стоимость позиций — то, из чего собирается Labor Cost."],
- ["6","labor[] вычисляется, а не хранится","Hourly Rate из смэппленной Rate Card × Workload × Working Hours per Month — часть с часами использует цепочку fallback из SC 4."],
- ["6a","warnings[] здесь не опционален","Позиция без Rate Card Mapping не даёт вообще ничего. unmappedPositions обязан быть в payload, иначе итог молча занижен."],
- ["8","Клод показывает входы, а не только итог","Ставку, загрузку и часы, чтобы цифру можно было проверить — и тут же говорит про пробел в маппинге."],
- ["!","Низкий итог может быть дыркой в маппинге","Несмэппленные позиции читаются как экономия. Сказать об этом — разница между полезным и обманчивым ответом."]],
+ ["6","Ответ содержит позиции + workload + per-position costs + monthly unit costs","Hourly Rate из смэппленной Rate Card × Workload × Working Hours per Month. Каждая позиция возвращается с помесячной стоимостью, а unit-level monthly costs — итого по юниту."],
+ ["6a","Если position cost service недоступен","Позиции и загрузки всё равно возвращаются — без секции costs под каждой позицией. Graceful degradation."],
+ ["8","Клод показывает входы, а не только итог","Ставку, загрузку и часы, чтобы цифру можно было проверить — и тут же говорит, если стоимость позиции не доступна."],
+ ["!","Это расчёт DC, а не факт PlanView","dc_ps_resource_plan_get возвращает стоимость, вычисленную DC из рейт-карт и загрузок. Выдавать её за бюджет PlanView — значит переврать источник."]],
  ans:["Позиция Senior Java Developer на юните X стоила 7 200 CAD в ноябре 2024: 45,00 CAD/ч × 100% загрузки × 160 часов.",
  "160 часов пришли из странового календаря Польши по умолчанию, поскольку вендор-специфичного на 2024 нет.",
  "Ещё одна позиция на юните X не имеет Rate Card Mapping, поэтому в итог юнита не попала — этот итог занижен, пока маппинг не добавлен."]},
@@ -643,6 +657,20 @@ const EXAMPLES=[
      req:'{\n  "name": "dc_ps_rate_card_get",\n  "arguments": {\n    "role": "UnknownRole"\n  }\n}',
      rtype:"err",
      res:'error: NO_DATA \u2014 no rate cards found matching the specified criteria.'}
+  ]},
+  {tool:"dc_ps_resource_plan_get",cases:[
+    {lbl:"Resource Plan с позициями, загрузками и стоимостью (MONTH)",
+     req:'{\n  "name": "dc_ps_resource_plan_get",\n  "arguments": {\n    "unitId": "034233",\n    "breakdown": "BOTH",\n    "granularity": "MONTH",\n    "startMonth": "2026-01",\n    "endMonth": "2026-03"\n  }\n}',
+     rtype:"ok",
+     res:'unit: 034233\nname: Store Technology Refresh\ntype: Standalone Project\ntotal members: 8\ndirect members: 5\n\npositions (2):\n  John Smith | role: Senior Java Developer | location: Offshore | status: Active\n    workload: 2026-01: 100% | 2026-02: 100% | 2026-03: 80%\n    costs:\n      2026-01: 17600\n      2026-02: 17600\n      2026-03: 14080\n  Jane Doe | role: Business Analyst | location: Onsite | status: Active\n    workload: 2026-01: 50% | 2026-02: 50%\n    costs:\n      2026-01: 8800\n      2026-02: 8800\n\nmonthly costs:\n  2026-01: 26400\n  2026-02: 26400\n  2026-03: 14080\n\ncurrent month costs:\n  labor cost: 26400\n  other cost: 5000\n  total cost: 31400'},
+    {lbl:"Resource Plan cumulative — past/current/forecast (CUMULATIVE)",
+     req:'{\n  "name": "dc_ps_resource_plan_get",\n  "arguments": {\n    "unitId": "034233",\n    "breakdown": "LABOR",\n    "granularity": "CUMULATIVE"\n  }\n}',
+     rtype:"ok",
+     res:'unit: 034233\nname: Store Technology Refresh\ntype: Standalone Project\ntotal members: 8\ndirect members: 5\n\npositions (2):\n  John Smith | role: Senior Java Developer | location: Offshore | status: Active\n  Jane Doe | role: Business Analyst | location: Onsite | status: Active\n\ncumulative costs:\n  labor cost:\n    past cost: 320000\n    current cost: 52800\n    forecast cost: 180000\n  total cost: 552800'},
+    {lbl:"Юнит не найден — NO_DATA",
+     req:'{\n  "name": "dc_ps_resource_plan_get",\n  "arguments": {\n    "unitId": "UNKNOWN-999"\n  }\n}',
+     rtype:"err",
+     res:'error: NO_DATA \u2014 no resource plan found for unit: UNKNOWN-999.'}
   ]},
   {tool:"dc_ps_unit_hierarchy_get",cases:[
     {lbl:"Project с дочерними Pod/Squad/Child (SC 1, 5\u20139 boundary check)",
