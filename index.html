@@ -224,12 +224,11 @@ const SECTIONS=[
         {id:"uc2",label:"Portfolio Group / Program",b:[H]},
         {id:"uc3",label:"Corporate Function / ORGANIZATION",b:[H]}],
   out:[
-   {id:"o5",src:"uc1",c:"green",tag:"SC 5–9",t:"5 / 6 / 7 / 8 / 9. Unit costs",
-    p:["labor[]: per month / role / person = Hourly Rate × Workload × Working Hours.",
-       "other[]: Cost Type incl. parent path, amount, comment.",
-       "cumulative{}: past, current, forecast — per breakdown."]},
-   {id:"o6",src:"uc1",c:"yellow",tag:"SC 6",t:"warnings[] is mandatory here",
-    p:["Unmapped positions contribute 0. Без явного предупреждения итог читается как экономия. Return unmappedPositions: n."]},
+   {id:"o5",src:"uc1",c:"green",tag:"SC 5, 7–9",t:"PlanView budget by cost type",
+    p:["Месячные Forecast / Actual / Variance по каждому cost type + year totals.",
+       "Это отчётный бюджет PlanView — НЕ расчёт из рейт-карт. Для позиций и DC-расчёта — dc_ps_resource_plan_get."]},
+   {id:"o6",src:"uc1",c:"yellow",tag:"SC 5–9",t:"warnings[] when cost type catalog unavailable",
+    p:["Если каталог типов недоступен — cost type ID вместо имени. Предупреждение в payload."]},
    {id:"o7",src:"uc2",c:"green",tag:"SC 5–9",t:"Same shape, rolled up",
     p:["Other Costs sidebar уже включает дочерние юниты, поэтому вызов на уровне Portfolio Group покрывает его проекты."]},
    {id:"o8",src:"uc3",c:"magenta",tag:"boundary of SC 5–9",t:"UNIT_NOT_SUPPORTED",
@@ -296,8 +295,8 @@ const SECTIONS=[
   out:[
    {id:"o16",src:"cf1",c:"green",tag:"SC 17",t:"17. Compare RP forecast vs PV actuals",
     p:["Шаблон несёт три оговорки: разные разрезы, разная свежесть, несмэппленные позиции."]},
-   {id:"o17",src:"cf1",c:"redbg",tag:"SC 2",t:"Consequence of scenario 2",
-    p:["get_budget_data нереализуем, поэтому сторона Planview может быть только годовыми статическими итогами. Сравнение годовое, не месяц-к-месяцу."]}]},
+   {id:"o17",src:"cf1",c:"yellow",tag:"SC 17",t:"RP vs PlanView: different granularities",
+    p:["Resource Plan и PlanView — разные источники с разными разрезами. Безопасно сравнивать только итоги. Для помесячного сравнения — dc_ps_unit_costs_get (Forecast/Actual из PlanView) против dc_ps_resource_plan_get."]}]},
  {id:"br",tool:"budget_review",fill:"grey",params:["args:","– unit","– period"],
   note:{c:"magenta",t:"Not yet implemented:",p:["Запланировано как будущее расширение. В текущей реализации MCP этого промпта нет."]},
   impl:[{id:"br1",label:"get_health_data + get_unit_risks + dc_ps_unit_costs_get",b:[CP]}],
@@ -332,16 +331,13 @@ const S=[
  "IT Gross Spent YTD (A) 1 850 000 · IT Gross Spend BOY (F) 2 500 000 · IT Gross Spend (A+F) 2 500 000 · Gross Investment Current CBA 3 000 000.",
  "Эти четыре — собственные значения юнита X, не подкатка дочерних. Year Actuals 1 850 000 и Year Forecast 650 000 агрегированы по X и его под-юнитам и приходят из Monthly-фида, синк 2024-11-04, то есть на семь дней свежее."]},
 
-{sid:"SC 2",st:"no",title:"месячные и годовые показатели бюджета",q:"Как юнит X отработал по бюджету в ноябре — прогноз против факта?",
- row:"cf",outs:["o17"],con:["c3"],
- steps:[["2","Ресурсы прикреплены, но не помогают","Иерархия и cost-types описывают структуру и метки. Ни один не несёт цифр, поэтому заменить отсутствующий фид они не могут."],
- ["3","Ни один тул не подходит","Ничто на поверхности не читает Month columns из Budget Management (Forecast / Actual / Variance). get_budget_data выброшен как нереализуемый."],
- ["4","Проверяются ближайшие соседи","dc_ps_financial_attributes_get отдаёт только четыре годовых KPI-индикатора. dc_ps_unit_costs_get отдаёт собственный расчёт DC из рейт-карт и загрузок — не отчётный факт Planview."],
- ["6","Пробел зафиксирован здесь","Красная заметка в Prompts — единственное место, где этот сценарий вообще присутствует: именно поэтому сравнение в SC 17 годовое."],
- ["8","Клод отказывает точно","Называет, чего не хватает, и предлагает то, что реально может дать, с честной маркировкой."],
- ["!","Никогда не подменять одно другим","Выдать Resource-Plan косты за факт Planview — значит переврать источник. Они считаются иначе и обновляются по другому расписанию."]],
- ans:["Месячные прогноз, факт и отклонение из Budget Management через эту поверхность недоступны — их не читает ни один тул.",
- "Что могу дать по юниту X: годовые итоги из Planview, либо помесячную разбивку затрат из Resource Plan. Второе — собственный расчёт Delivery Central из рейт-карт и загрузок, а не отчётный факт Planview, так что это ответ на другой вопрос, и выдавать его за ту же цифру я не буду."]},
+{sid:"SC 2",st:"ok",title:"месячные показатели бюджета PlanView",q:"Как юнит X отработал по бюджету в ноябре — прогноз против факта?",
+ row:"uc",outs:["o5","o6"],con:["c3"],
+ steps:[["3","dc_ps_unit_costs_get","dc_ps_unit_costs_get(unitId=\"X\", startMonth=\"2024-11\", endMonth=\"2024-11\"). Возвращает Forecast / Actual / Variance по каждому cost type за ноябрь из PlanView."],
+ ["6","Это отчётный факт PlanView, не расчёт Resource Plan","dc_ps_unit_costs_get отдаёт официальный бюджет PlanView. Для вычисленной стоимости из рейт-карт — dc_ps_resource_plan_get."],
+ ["!","Никогда не подменять одно другим","dc_ps_resource_plan_get возвращает расчётную стоимость DC из рейт-карт. Выдавать её за факт Planview — значит переврать источник."]],
+ ans:["За ноябрь 2024 по юниту X (отчётные данные PlanView): Labour Cost — forecast 980 000 CAD, actual 1 020 000 CAD, variance −40 000 CAD.",
+ "Это официальный бюджет из PlanView — не расчёт Resource Plan. Для вычисленной стоимости из рейт-карт и загрузок используйте dc_ps_resource_plan_get."]},
 
 {sid:"SC 3",st:"ok",title:"поиск рейт-карт",q:"Какая у нас часовая ставка на Senior Software Engineer, offshore, Пуна, Индия?",
  row:"rc",outs:["o9","o10"],con:["c4","c5"],
@@ -373,7 +369,7 @@ const S=[
 {sid:"SC 5",st:"ok",title:"Other Costs юнита",q:"Какие other costs заведены на юните X в этом году?",
  row:"uc",outs:["o5","o8"],res:"ct",con:["c1","c5"],
  steps:[["2","Сначала используется ресурс cost-types","Он даёт точные метки Cost Category / Cost Type, сконфигурированные в этом деплое, чтобы ответ совпадал с тем, что пользователь видит на экране."],
- ["3","Один тул покрывает оба вида затрат","dc_ps_unit_costs_get(unitId=\"X\", breakdown=\"OTHER\") — breakdown выбирает; labor и other слиты в один примитив."],
+ ["3","dc_ps_unit_costs_get без фильтров","dc_ps_unit_costs_get(unitId=\"X\") — возвращает все cost types из PlanView, включая Other. Фильтрация по типу — на стороне модели."],
  ["4","Сервер резолвит юнит","Resource Plan задокументирован для business unit, account, program, project и stream."],
  ["5","Уровень = Standalone Project / Delivery Program / Child Project / Pod / Squad","Там, где записи Other Cost реально создаются. Каждая запись всегда привязана к конкретному юниту."],
  ["6","Возвращается other[]","Cost Type с путём до родительской категории, сумма по месяцам, комментарий и владеющий юнит. Повторяемость выводится из Repeat плюс Start / End."],
@@ -397,14 +393,14 @@ const S=[
  "Ещё одна позиция на юните X не имеет Rate Card Mapping, поэтому в итог юнита не попала — этот итог занижен, пока маппинг не добавлен."]},
 
 {sid:"SC 7",st:"ok",title:"Labor Cost — cumulative",q:"Сколько всего потрачено на людей по юниту X и сколько ещё в прогнозе?",
- row:"uc",outs:["o5"],con:["c2","c5"],
- steps:[["3","granularity=CUMULATIVE, breakdown=LABOR","Тот же тул, что в SC 6; меняется только granularity — поэтому это один примитив, а не два."],
+ row:"rp",outs:["o19"],con:["c2","c5"],
+ steps:[["3","dc_ps_resource_plan_get с CUMULATIVE","dc_ps_resource_plan_get(unitId=\"X\", breakdown=\"LABOR\", granularity=\"CUMULATIVE\"). Cumulative-режим даёт past / current / forecast — monthly time series пропускается."],
  ["4","Сервер резолвит юнит","Тот же шаг резолва и то же падение на верхушке иерархии."],
  ["5","Уровень = project-level типы или Portfolio Group с подкаткой","На уровне аккаунта цифра уже включает дочерние юниты, так что ответ по родителю покрывает его проекты."],
- ["6","cumulative{} past / current / forecast","Cumulative Cost — это прошлые затраты плюс текущий месяц плюс прогноз, и прогноз достаёт на два года вперёд."],
+ ["6","cumulative costs: past / current / forecast","Cumulative Cost — это прошлые затраты плюс текущий месяц плюс прогноз, и прогноз достаёт на два года вперёд."],
  ["7","Пересчёт может быть в процессе","Смена рейт-карты или загрузки запускает пересчёт; пока он идёт, показатели устаревшие, и ответ должен это сказать."],
  ["8","Клод разделяет потраченное и запланированное","Единая cumulative-цифра провоцирует прочитать план как обязательства."],
- ["!","Это не цифра Planview","Это собственный расчёт Delivery Central. Предлагать её как отчётный факт нельзя."]],
+ ["!","Это не цифра Planview","Это собственный расчёт Delivery Central из рейт-карт. Предлагать её как отчётный факт нельзя."]],
  ans:["Юнит X, только люди, всё в CAD: прошлое 1 240 000 · текущий месяц 96 000 · прогноз 640 000 — cumulative 1 976 000.",
  "Прогнозная часть покрывает запланированную загрузку до двух лет вперёд, так что большая часть этих 640 000 ещё не является обязательствами.",
  "Это собственный расчёт Delivery Central из рейт-карт и загрузок, а не цифра, отчитанная Planview."]},
@@ -412,7 +408,7 @@ const S=[
 {sid:"SC 8",st:"ok",title:"Other Cost за месяц / по типу",q:"Разложи other costs юнита X по типам за Q4.",
  row:"uc",outs:["o5"],res:"ct",con:["c1","c5"],
  steps:[["2","Ресурс cost-types даёт группировку","Дерево категорий приходит из сконфигурированного справочника, поэтому группировка в ответе совпадает с группировкой на экране."],
- ["3","breakdown=other, granularity=month","Период — Q4, значит на каждый тип затрат приходит три месячных ведра."],
+ ["3","dc_ps_unit_costs_get за Q4","dc_ps_unit_costs_get(unitId=\"X\", startMonth=\"2024-10\", endMonth=\"2024-12\"). Возвращает все cost types; модель фильтрует Other по каталогу."],
  ["5","Уровень = Standalone Project / Delivery Program / Child Project / Pod / Squad","Плюс записи дочерних юнитов, которые Other Costs sidebar включает всегда."],
  ["6","Повторяемость раскрывается по месяцам","Запись с ежемесячным повтором появляется в каждом месяце периода; разовая — только в своём."],
  ["7","Отсутствует — не значит ноль","Тип затрат без записей в периоде опускается, а не показывается как 0 — иначе читается как сознательно нулевой бюджет."],
@@ -424,8 +420,8 @@ const S=[
  "В Q4 не попадает ни одной записи Hardware — у этой категории нет строк в периоде, что не то же самое, что нулевой бюджет."]},
 
 {sid:"SC 9",st:"ok",title:"Other Cost — cumulative",q:"Какие у юнита X накопленные other costs в разбивке past / current / forecast?",
- row:"uc",outs:["o5"],con:["c2","c5"],
- steps:[["3","breakdown=OTHER, granularity=CUMULATIVE","Other-половина того же Cumulative Cost, который показывает заголовок юнита."],
+ row:"rp",outs:["o19"],con:["c2","c5"],
+ steps:[["3","dc_ps_resource_plan_get с breakdown=OTHER, granularity=CUMULATIVE","dc_ps_resource_plan_get(unitId=\"X\", breakdown=\"OTHER\", granularity=\"CUMULATIVE\"). Other-половина того же Cumulative Cost, который показывает заголовок юнита."],
  ["4","Сервер резолвит юнит","Тот же резолв и то же ограничение на верхних уровнях, что и на стороне людей."],
  ["5","Уровень = project-level типы или Portfolio Group с подкаткой","Other Costs дочерних юнитов включаются собственной логикой сайдбара."],
  ["6","Прогноз выводится из правил повторения","Будущие месяцы раскрываются из Repeat и Start / End каждой записи, а не из отдельного поля прогноза."],
@@ -520,17 +516,18 @@ const S=[
  "2 500 000 — динамическая годовая цифра, возвращается с aggregated:true: юнит X плюс все его под-юниты. Они разошлись потому, что собственная статическая запись X не обновлялась под её детей. Оба дефолта агрегации настраиваемы, поэтому я сообщаю флаги ровно так, как они пришли, а не по правилу."]},
 
 {sid:"SC 17",st:"ok",title:"RP forecast против Planview actuals",q:"Соответствует ли план по стаффингу юнита X тому, что отчитали финансы?",
- row:"cf",outs:["o16","o17"],comp:["fa","uc"],con:["c2","c5"],
+ row:"cf",outs:["o16","o17"],comp:["rp","fa"],con:["c2","c5"],
  steps:[["2","Это промпт, а не тул","Ни один экран DC не сводит две стороны, а оркестрация не должна жить внутри тула. Шаблон — то, что вызывает пользователь."],
- ["3a","dc_ps_unit_costs_get для стороны плана","Люди плюс other costs, собранные снизу вверх из рейт-карт, загрузок и стоящих записей."],
- ["3b","dc_ps_financial_attributes_get для отчётной стороны","Статические годовые итоги, ключованные по project Work ID."],
+ ["3a","dc_ps_resource_plan_get для стороны плана","Люди плюс other costs, собранные снизу вверх из рейт-карт, загрузок и стоящих записей."],
+ ["3b","dc_ps_financial_attributes_get для годовой отчётной стороны","Статические годовые KPI-итоги из Planview, ключованные по project Work ID."],
+ ["3c","dc_ps_unit_costs_get для помесячного сравнения","Forecast / Actual / Variance из PlanView по месяцам. Используйте, если нужен разрез не по году, а по периоду."],
  ["6","Две стороны не сходятся по построению","Planview бьёт по Cost Type; Resource Plan бьёт по позициям и своим типам other cost. Безопасно сравнивать только итоги."],
- ["6a","И сравнение получается годовым","Поскольку месячные факты Planview недостижимы, отчётной стороной может быть только годовой итог, а не помесячный ряд."],
+ ["6a","Гранулярность сравнения на выбор","Для годового итога — dc_ps_financial_attributes_get. Для помесячного ряда — dc_ps_unit_costs_get (Forecast / Actual из PlanView) против dc_ps_resource_plan_get."],
  ["7","Две разные даты свежести","Resource Plan пересчитывается на месте; сторона Planview — недельный снапшот. Обе даты принадлежат ответу."],
  ["8","Клод сравнивает итоги, проговаривая оговорки","Одна цифра разрыва без них выглядела бы куда точнее, чем есть."],
  ["!","Одна сторона может быть занижена","Позиции без маппинга рейт-карты не дают ничего, поэтому план может быть ниже реальности, а не действительно экономнее."]],
- ans:["За 2024 по юниту X: сторона Resource Plan даёт 1 976 000 CAD по людям плюс 800 000 CAD other costs = 2 776 000 CAD, пересчитано на месте. Planview отчитывает IT Gross Spend (A+F) 2 500 000 CAD по состоянию на синк 2024-10-28.",
- "Разрыв около 276 000 CAD, но читать его надо с тремя поправками. Это годовое сравнение, а не месяц-к-месяцу, потому что месячные факты Planview здесь недоступны. Две стороны раскладывают затраты по-разному, поэтому сопоставимы только итоги. И одна позиция на юните X не имеет маппинга рейт-карты, поэтому сторона плана скорее занижена — реальный разрыв может быть больше."]}
+ ans:["За 2024 по юниту X: сторона Resource Plan (dc_ps_resource_plan_get) даёт 1 976 000 CAD по людям плюс 800 000 CAD other costs = 2 776 000 CAD, пересчитано на месте. Planview отчитывает IT Gross Spend (A+F) 2 500 000 CAD по состоянию на синк 2024-10-28.",
+ "Разрыв около 276 000 CAD с тремя поправками: две стороны раскладывают затраты по-разному, поэтому сопоставимы только итоги; одна позиция не имеет маппинга рейт-карты, поэтому сторона плана скорее занижена; для помесячного сравнения используйте dc_ps_unit_costs_get против dc_ps_resource_plan_get."]}
 ];
 
 /* ============================ РЕНДЕР ============================ */
@@ -621,18 +618,14 @@ const EXAMPLES=[
      res:'error: NO_DATA \u2014 no annual budget data found for unit: PORTFOLIO-001.'}
   ]},
   {tool:"dc_ps_unit_costs_get",cases:[
-    {lbl:"Labor monthly Q4 2026 (SC 6)",
-     req:'{\n  "name": "dc_ps_unit_costs_get",\n  "arguments": {\n    "unitId": "034233",\n    "startMonth": "2026-10",\n    "endMonth": "2026-12",\n    "breakdown": "LABOR",\n    "granularity": "MONTH"\n  }\n}',
+    {lbl:"PlanView бюджет за Q4 2026 — monthly по всем cost types",
+     req:'{\n  "name": "dc_ps_unit_costs_get",\n  "arguments": {\n    "unitId": "034233",\n    "startMonth": "2026-10",\n    "endMonth": "2026-12"\n  }\n}',
      rtype:"ok",
-     res:'unit: 034233\nperiod: 2026-10 to 2026-12\ncurrency: CAD\ngranularity: month\n\nLabor:\n  monthly:\n    2026-10 | forecast: 96000.00 CAD | actual: 94200.00 CAD | variance: -1800.00 CAD\n    2026-11 | forecast: 96000.00 CAD | actual: 97500.00 CAD | variance: 1500.00 CAD\n    2026-12 | forecast: 96000.00 CAD | actual: null CAD | variance: null CAD\n  year totals:\n    2026 | forecast: 1152000.00 CAD | actual: 191700.00 CAD | total: 1152000.00 CAD'},
-    {lbl:"Каталог типов недоступен — warnings в payload (SC 6 \xb7 warnings)",
-     req:'{\n  "name": "dc_ps_unit_costs_get",\n  "arguments": {\n    "unitId": "034233",\n    "startMonth": "2026-01",\n    "endMonth": "2026-12",\n    "breakdown": "BOTH",\n    "granularity": "MONTH"\n  }\n}',
+     res:'unit: 034233\nperiod: 2026-10 to 2026-12\ncurrency: CAD\n\nLabor:\n  monthly:\n    2026-10 | forecast: 96000.00 CAD | actual: 94200.00 CAD | variance: -1800.00 CAD\n    2026-11 | forecast: 96000.00 CAD | actual: 97500.00 CAD | variance: 1500.00 CAD\n    2026-12 | forecast: 96000.00 CAD | actual: null CAD | variance: null CAD\n  year totals:\n    2026 | forecast: 1152000.00 CAD | actual: 191700.00 CAD | total: 1152000.00 CAD'},
+    {lbl:"Каталог типов недоступен — warnings в payload",
+     req:'{\n  "name": "dc_ps_unit_costs_get",\n  "arguments": {\n    "unitId": "034233",\n    "startMonth": "2026-01",\n    "endMonth": "2026-12"\n  }\n}',
      rtype:"warn",
-     res:'unit: 034233\nperiod: 2026-01 to 2026-12\ncurrency: CAD\ngranularity: month\nwarnings:\n  - cost type catalog could not be loaded; cost type names may be missing\n\ncost type 1:\n  monthly:\n    2026-01 | forecast: 96000.00 CAD | actual: 94200.00 CAD | variance: -1800.00 CAD\n    ...\n  year totals:\n    2026 | forecast: 1152000.00 CAD | actual: 1092000.00 CAD | total: 1152000.00 CAD'},
-    {lbl:"Накопительно, оба вида затрат (SC 7 + SC 9)",
-     req:'{\n  "name": "dc_ps_unit_costs_get",\n  "arguments": {\n    "unitId": "034233",\n    "startMonth": "2026-01",\n    "endMonth": "2026-03",\n    "breakdown": "BOTH",\n    "granularity": "CUMULATIVE"\n  }\n}',
-     rtype:"ok",
-     res:'unit: 034233\nperiod: 2026-01 to 2026-03\ncurrency: CAD\ngranularity: cumulative\n\nLabor:\n  cumulative:\n    2026-01 | forecast: 96000.00 CAD | actual: 94200.00 CAD | variance: -1800.00 CAD\n    2026-02 | forecast: 192000.00 CAD | actual: 188400.00 CAD | variance: -3600.00 CAD\n    2026-03 | forecast: 288000.00 CAD | actual: 282600.00 CAD | variance: -5400.00 CAD\n  year totals:\n    2026 | forecast: 1152000.00 CAD | actual: 282600.00 CAD | total: 1152000.00 CAD\n\nConsultants:\n  cumulative:\n    2026-01 | forecast: 92000.00 CAD | actual: 92000.00 CAD | variance: 0.00 CAD\n    2026-02 | forecast: 184000.00 CAD | actual: 184000.00 CAD | variance: 0.00 CAD\n    2026-03 | forecast: 276000.00 CAD | actual: 276000.00 CAD | variance: 0.00 CAD\n  year totals:\n    2026 | forecast: 1104000.00 CAD | actual: 276000.00 CAD | total: 1104000.00 CAD'}
+     res:'unit: 034233\nperiod: 2026-01 to 2026-12\ncurrency: CAD\nwarnings:\n  - cost type catalog could not be loaded; cost type names may be missing\n\ncost type 1:\n  monthly:\n    2026-01 | forecast: 96000.00 CAD | actual: 94200.00 CAD | variance: -1800.00 CAD\n    ...\n  year totals:\n    2026 | forecast: 1152000.00 CAD | actual: 1092000.00 CAD | total: 1152000.00 CAD'}
   ]},
   {tool:"dc_ps_working_hours_calendar_get",cases:[
     {lbl:"Вендор + страна найдены — vendor+country fallback (SC 4)",
@@ -823,65 +816,65 @@ const ERROR_EXAMPLES=[
      body:"Canada's 2025 working calendar totals 1,968 hours. Lightest months are February and December (152 h each); heaviest is October (176 h). resolvedFrom=country confirms the calendar was matched by country code."}
   ],"If vendor+country both match a record that record wins; otherwise falls back to country, then organisational default."));
 
-  /* SC 5 — Other costs list (monthly) */
-  sec.appendChild(buildCard(5,"Other costs list — monthly breakdown","Happy Path","ok",[
+  /* SC 5 — Other costs list (monthly, PlanView) */
+  sec.appendChild(buildCard(5,"Other costs list — PlanView monthly breakdown","Happy Path","ok",[
     {kind:"user",hd:"User request",
      body:"Show me the monthly other-costs breakdown for unit CTCX-042 in 2025."},
     {kind:"tool",hd:"Tool invocation",
-     body:'dc_ps_unit_costs_get(\n  unitId      = "CTCX-042",\n  startMonth  = "2025-01",\n  endMonth    = "2025-12",\n  breakdown   = "OTHER",\n  granularity = "MONTH"\n)'},
+     body:'dc_ps_unit_costs_get(\n  unitId     = "CTCX-042",\n  startMonth = "2025-01",\n  endMonth   = "2025-12"\n)'},
     {kind:"raw ok",hd:"Raw tool response",
-     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-12\ncurrency: CAD\ngranularity: month\n\nSoftware Licenses:\n  monthly:\n    2025-01 | forecast: 18000.00 CAD | actual: 17500.00 CAD | variance: -500.00 CAD\n    2025-02 | forecast: 18000.00 CAD | actual: 18200.00 CAD | variance: 200.00 CAD\n    ...\n  year totals:\n    2025 | forecast: 216000.00 CAD | actual: 211000.00 CAD | total: 211000.00 CAD\n\nTravel & Expenses:\n  monthly:\n    2025-01 | forecast: 5000.00 CAD | actual: 3200.00 CAD | variance: -1800.00 CAD\n    ...'},
+     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-12\ncurrency: CAD\n\nSoftware Licenses:\n  monthly:\n    2025-01 | forecast: 18000.00 CAD | actual: 17500.00 CAD | variance: -500.00 CAD\n    2025-02 | forecast: 18000.00 CAD | actual: 18200.00 CAD | variance: 200.00 CAD\n    ...\n  year totals:\n    2025 | forecast: 216000.00 CAD | actual: 211000.00 CAD | total: 211000.00 CAD\n\nTravel & Expenses:\n  monthly:\n    2025-01 | forecast: 5000.00 CAD | actual: 3200.00 CAD | variance: -1800.00 CAD\n    ...'},
     {kind:"answer",hd:"Claude answer",
-     body:'CTCX-042 "Other costs" in 2025 — Software Licenses: 211,000 CAD actual vs 216,000 CAD forecast (−5,000 favourable). Travel & Expenses are tracking below forecast in Jan. Full monthly detail available above.'}
-  ],"breakdown=\"other\" filters to non-labor cost types. Use breakdown=\"labor\" or omit for all types."));
+     body:'CTCX-042 "Other costs" in 2025 (PlanView budget) — Software Licenses: 211,000 CAD actual vs 216,000 CAD forecast (−5,000 favourable). Travel & Expenses are tracking below forecast in Jan.'}
+  ],"dc_ps_unit_costs_get returns all cost types from PlanView. Model filters to Other types by reading named blocks."));
 
-  /* SC 6 — Labor cost monthly + warnings */
-  sec.appendChild(buildCard(6,"Labor cost monthly with catalog warnings","Happy Path","ok",[
+  /* SC 6 — Position-level labor cost (Resource Plan) */
+  sec.appendChild(buildCard(6,"Position-level labor cost from Resource Plan","Happy Path","ok",[
     {kind:"user",hd:"User request",
      body:"What is the monthly labor cost for unit CTCX-042 in Q1 2025?"},
     {kind:"tool",hd:"Tool invocation",
-     body:'dc_ps_unit_costs_get(\n  unitId      = "CTCX-042",\n  startMonth  = "2025-01",\n  endMonth    = "2025-03",\n  breakdown   = "LABOR",\n  granularity = "MONTH"\n)'},
-    {kind:"raw warn",hd:"Raw tool response (with warning)",
-     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-03\ncurrency: CAD\ngranularity: month\nwarnings:\n  - cost type id=42 not found in catalog\n\nLabor:\n  monthly:\n    2025-01 | forecast: 300000.00 CAD | actual: 288000.00 CAD | variance: -12000.00 CAD\n    2025-02 | forecast: 300000.00 CAD | actual: 295000.00 CAD | variance: -5000.00 CAD\n    2025-03 | forecast: 300000.00 CAD | actual: 310000.00 CAD | variance: 10000.00 CAD\n  year totals:\n    2025 | forecast: 3600000.00 CAD | actual: 3240000.00 CAD | total: 3240000.00 CAD'},
+     body:'dc_ps_resource_plan_get(\n  unitId      = "CTCX-042",\n  breakdown   = "LABOR",\n  granularity = "MONTH",\n  startMonth  = "2025-01",\n  endMonth    = "2025-03"\n)'},
+    {kind:"raw ok",hd:"Raw tool response",
+     body:'unit: CTCX-042\nname: Store Technology Refresh\ntotal members: 8\ndirect members: 5\n\npositions (3):\n  John Smith | role: Senior Developer | location: Onsite | status: Active\n    workload: 2025-01: 100% | 2025-02: 100% | 2025-03: 100%\n    costs:\n      2025-01: 16464\n      2025-02: 14896\n      2025-03: 16464\n  Jane Doe | role: Business Analyst | location: Offshore | status: Active\n    workload: 2025-01: 50% | 2025-02: 50% | 2025-03: 50%\n    costs:\n      2025-01: 3780\n      2025-02: 3420\n      2025-03: 3780\n\nmonthly costs:\n  2025-01: 288000\n  2025-02: 295000\n  2025-03: 310000\n\ncurrent month costs:\n  labor cost: 310000\n  total cost: 310000'},
     {kind:"answer",hd:"Claude answer",
-     body:"Q1 2025 labor for CTCX-042: Jan −12k, Feb −5k, Mar +10k variance. Q1 actuals 893,000 CAD vs 900,000 CAD forecast (−7k). ⚠ Note: cost type id=42 was not found in the catalog and may not be reflected in these totals."}
-  ],"Warnings appear inline in the raw response and must be surfaced to the user."));
+     body:"Q1 2025 labor for CTCX-042 (Resource Plan calculation): Jan 288k, Feb 295k, Mar 310k. This is DC's own calculation from rate cards × workload × hours — not PlanView reported budget."}
+  ],"dc_ps_resource_plan_get returns positions + per-position costs + monthly unit costs. This is DC's own calculation, not PlanView."));
 
-  /* SC 7 — Labor cost cumulative */
-  sec.appendChild(buildCard(7,"Labor cost — cumulative granularity","Happy Path","ok",[
+  /* SC 7 — Labor cost cumulative (Resource Plan) */
+  sec.appendChild(buildCard(7,"Labor cost — cumulative (Resource Plan)","Happy Path","ok",[
     {kind:"user",hd:"User request",
      body:"Show me cumulative labor spend for CTCX-042 through H1 2025."},
     {kind:"tool",hd:"Tool invocation",
-     body:'dc_ps_unit_costs_get(\n  unitId      = "CTCX-042",\n  startMonth  = "2025-01",\n  endMonth    = "2025-06",\n  breakdown   = "LABOR",\n  granularity = "CUMULATIVE"\n)'},
+     body:'dc_ps_resource_plan_get(\n  unitId      = "CTCX-042",\n  breakdown   = "LABOR",\n  granularity = "CUMULATIVE"\n)'},
     {kind:"raw ok",hd:"Raw tool response",
-     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-06\ncurrency: CAD\ngranularity: cumulative\n\nLabor:\n  cumulative:\n    2025-01 | forecast: 300000.00 CAD | actual: 288000.00 CAD | variance: -12000.00 CAD\n    2025-02 | forecast: 600000.00 CAD | actual: 583000.00 CAD | variance: -17000.00 CAD\n    2025-03 | forecast: 900000.00 CAD | actual: 893000.00 CAD | variance: -7000.00 CAD\n    2025-04 | forecast: 1200000.00 CAD | actual: 1185000.00 CAD | variance: -15000.00 CAD\n    2025-05 | forecast: 1500000.00 CAD | actual: 1490000.00 CAD | variance: -10000.00 CAD\n    2025-06 | forecast: 1800000.00 CAD | actual: 1778000.00 CAD | variance: -22000.00 CAD'},
+     body:'unit: CTCX-042\nname: Store Technology Refresh\ntotal members: 8\ndirect members: 5\n\npositions (3):\n  John Smith | role: Senior Developer | location: Onsite | status: Active\n  Jane Doe | role: Business Analyst | location: Offshore | status: Active\n\ncumulative costs:\n  labor cost:\n    past cost: 1240000\n    current cost: 96000\n    forecast cost: 640000\n  total cost: 1976000'},
     {kind:"answer",hd:"Claude answer",
-     body:"Through June 2025, CTCX-042 has spent 1,778,000 CAD of 1,800,000 CAD labor forecast — 99% consumed with a cumulative −22,000 CAD variance. Burn rate has been consistent ~297k/month."}
-  ],"Cumulative mode: each row is a running total — values accumulate across months in the response."));
+     body:"CTCX-042 labor (Resource Plan): past 1,240k + current 96k + forecast 640k = cumulative 1,976k CAD. This is DC's own rate-card-based calculation, not PlanView reported figures."}
+  ],"CUMULATIVE granularity skips monthly time series and shows past/current/forecast totals."));
 
-  /* SC 8 — Other cost by type */
-  sec.appendChild(buildCard(8,"Other costs filtered to a single type","Happy Path","ok",[
+  /* SC 8 — Other cost by type (PlanView) */
+  sec.appendChild(buildCard(8,"Other costs filtered to a single type — PlanView","Happy Path","ok",[
     {kind:"user",hd:"User request",
      body:"How much did CTCX-042 spend on Software Licenses in 2025?"},
     {kind:"tool",hd:"Tool invocation",
-     body:'dc_ps_unit_costs_get(\n  unitId      = "CTCX-042",\n  startMonth  = "2025-01",\n  endMonth    = "2025-12",\n  breakdown   = "OTHER",\n  granularity = "MONTH"\n)'},
+     body:'dc_ps_unit_costs_get(\n  unitId     = "CTCX-042",\n  startMonth = "2025-01",\n  endMonth   = "2025-12"\n)'},
     {kind:"raw ok",hd:"Raw tool response",
-     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-12\ncurrency: CAD\ngranularity: month\n\nSoftware Licenses:\n  monthly:\n    2025-01 | forecast: 18000.00 CAD | actual: 17500.00 CAD | variance: -500.00 CAD\n    ...\n  year totals:\n    2025 | forecast: 216000.00 CAD | actual: 211000.00 CAD | total: 211000.00 CAD'},
+     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-12\ncurrency: CAD\n\nSoftware Licenses:\n  monthly:\n    2025-01 | forecast: 18000.00 CAD | actual: 17500.00 CAD | variance: -500.00 CAD\n    ...\n  year totals:\n    2025 | forecast: 216000.00 CAD | actual: 211000.00 CAD | total: 211000.00 CAD'},
     {kind:"answer",hd:"Claude answer",
-     body:"CTCX-042 spent 211,000 CAD on Software Licenses in 2025, slightly under the 216,000 CAD forecast (−5,000 CAD favourable)."}
-  ],"breakdown=OTHER returns all non-labor cost types. Filter to a specific cost type by reading the named block in the response. breakdown only accepts LABOR, OTHER, or BOTH."));
+     body:"CTCX-042 spent 211,000 CAD on Software Licenses in 2025 (PlanView budget), slightly under the 216,000 CAD forecast (−5,000 CAD favourable)."}
+  ],"dc_ps_unit_costs_get returns all cost types. Model reads the specific named block (Software Licenses) from the response."));
 
-  /* SC 9 — Other cost cumulative */
-  sec.appendChild(buildCard(9,"Other costs — cumulative spend tracking","Happy Path","ok",[
+  /* SC 9 — Other cost cumulative (Resource Plan) */
+  sec.appendChild(buildCard(9,"Other costs — cumulative (Resource Plan)","Happy Path","ok",[
     {kind:"user",hd:"User request",
      body:"Show cumulative other costs for CTCX-042 through September 2025."},
     {kind:"tool",hd:"Tool invocation",
-     body:'dc_ps_unit_costs_get(\n  unitId      = "CTCX-042",\n  startMonth  = "2025-01",\n  endMonth    = "2025-09",\n  breakdown   = "OTHER",\n  granularity = "CUMULATIVE"\n)'},
+     body:'dc_ps_resource_plan_get(\n  unitId      = "CTCX-042",\n  breakdown   = "OTHER",\n  granularity = "CUMULATIVE"\n)'},
     {kind:"raw ok",hd:"Raw tool response",
-     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-09\ncurrency: CAD\ngranularity: cumulative\n\nSoftware Licenses:\n  cumulative:\n    2025-01 | forecast: 18000.00 CAD | actual: 17500.00 CAD | variance: -500.00 CAD\n    2025-02 | forecast: 36000.00 CAD | actual: 35700.00 CAD | variance: -300.00 CAD\n    ...\n    2025-09 | forecast: 162000.00 CAD | actual: 158400.00 CAD | variance: -3600.00 CAD'},
+     body:'unit: CTCX-042\nname: Store Technology Refresh\ntotal members: 8\ndirect members: 5\n\ncumulative costs:\n  other cost:\n    past cost: 340000\n    current cost: 92000\n    forecast cost: 368000\n  total cost: 800000'},
     {kind:"answer",hd:"Claude answer",
-     body:"Through September 2025, CTCX-042 has spent 158,400 CAD on Software Licenses of a 162,000 CAD 9-month forecast (−3,600 CAD favourable, 97.8% consumed)."}
-  ]));
+     body:"CTCX-042 other costs (Resource Plan): past 340k + current 92k + forecast 368k = cumulative 800k CAD. This is DC's own calculation, not PlanView reported budget."}
+  ],"CUMULATIVE with breakdown=OTHER shows past/current/forecast for non-labor costs."));
 
   /* ======================== GROUP 2: COMPOSITION ======================== */
   sec.appendChild(div("uc-group-hd","Composition — multi-tool scenarios"));
@@ -891,7 +884,7 @@ const ERROR_EXAMPLES=[
     {kind:"user",hd:"User request",
      body:"For CTCX-042 in January 2025, does the reported labor cost match the team's rate card and working hours?"},
     {kind:"tool",hd:"Tool invocations (3)",
-     body:'① dc_ps_unit_costs_get(unitId="CTCX-042", startMonth="2025-01", endMonth="2025-01",\n   breakdown="LABOR", granularity="MONTH")\n\n② dc_ps_rate_card_get(vendor="TechCorp", country="Canada",\n   location="Onsite", role="Senior Developer")\n\n③ dc_ps_working_hours_calendar_get(year=2025, country="Canada")'},
+     body:'① dc_ps_resource_plan_get(unitId="CTCX-042", breakdown="LABOR",\n   granularity="MONTH", startMonth="2025-01", endMonth="2025-01")\n\n② dc_ps_rate_card_get(vendor="TechCorp", country="Canada",\n   location="Onsite", role="Senior Developer")\n\n③ dc_ps_working_hours_calendar_get(year=2025, country="Canada")'},
     {kind:"raw ok",hd:"Aggregated raw responses",
      body:'① Labor Jan 2025: actual=288000.00 CAD\n\n② rate: 98.00 CAD/hr from 2025-01-01\n\n③ JANUARY: 168.0 hours'},
     {kind:"answer",hd:"Claude answer",
@@ -918,9 +911,9 @@ const ERROR_EXAMPLES=[
     {kind:"user",hd:"User request",
      body:"Show all costs for CTCX-042 in January 2025."},
     {kind:"tool",hd:"Tool invocation",
-     body:'dc_ps_unit_costs_get(\n  unitId      = "CTCX-042",\n  startMonth  = "2025-01",\n  endMonth    = "2025-01",\n  granularity = "MONTH"\n)'},
+     body:'dc_ps_unit_costs_get(\n  unitId     = "CTCX-042",\n  startMonth = "2025-01",\n  endMonth   = "2025-01"\n)'},
     {kind:"raw warn",hd:"Raw tool response (partial)",
-     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-01\ncurrency: CAD\ngranularity: month\nwarnings:\n  - cost type id=42 not found in catalog\n\nLabor:\n  monthly:\n    2025-01 | forecast: 300000.00 CAD | actual: 288000.00 CAD | variance: -12000.00 CAD\n  year totals:\n    2025 | forecast: 3600000.00 CAD | actual: 3240000.00 CAD | total: 3240000.00 CAD\n\ncost type 42:\n  monthly:\n    2025-01 | forecast: 5000.00 CAD | actual: null CAD | variance: null CAD'},
+     body:'unit: CTCX-042\nperiod: 2025-01 to 2025-01\ncurrency: CAD\nwarnings:\n  - cost type id=42 not found in catalog\n\nLabor:\n  monthly:\n    2025-01 | forecast: 300000.00 CAD | actual: 288000.00 CAD | variance: -12000.00 CAD\n  year totals:\n    2025 | forecast: 3600000.00 CAD | actual: 3240000.00 CAD | total: 3240000.00 CAD\n\ncost type 42:\n  monthly:\n    2025-01 | forecast: 5000.00 CAD | actual: null CAD | variance: null CAD'},
     {kind:"answer",hd:"Claude answer",
      body:"January 2025 data for CTCX-042 is partially available. Labor: 288,000 CAD actual. ⚠ Cost type id=42 is present in the budget but not in the catalog — its name is unknown and its actual/variance values are null (not yet synced)."}
   ],"null ≠ 0: a null actual means no data received, not zero spend."));
@@ -930,7 +923,7 @@ const ERROR_EXAMPLES=[
     {kind:"user",hd:"User request",
      body:"What is the latest labor cost for unit CTCX-042?"},
     {kind:"tool",hd:"Tool invocation",
-     body:'dc_ps_unit_costs_get(\n  unitId      = "CTCX-042",\n  startMonth  = "2025-01",\n  endMonth    = "2025-12",\n  breakdown   = "LABOR",\n  granularity = "MONTH"\n)'},
+     body:'dc_ps_unit_costs_get(\n  unitId     = "CTCX-042",\n  startMonth = "2025-01",\n  endMonth   = "2025-12"\n)'},
     {kind:"raw err",hd:"Raw tool response",
      body:'error: STALE — monthly budget data could not be retrieved for unit: CTCX-042, please retry.'},
     {kind:"answer",hd:"Claude answer",
@@ -942,9 +935,9 @@ const ERROR_EXAMPLES=[
     {kind:"user",hd:"User request",
      body:"Did CTCX-042 have any Travel & Expenses in February 2025?"},
     {kind:"tool",hd:"Tool invocation",
-     body:'dc_ps_unit_costs_get(\n  unitId      = "CTCX-042",\n  startMonth  = "2025-02",\n  endMonth    = "2025-02",\n  breakdown   = "OTHER",\n  granularity = "MONTH"\n)'},
+     body:'dc_ps_unit_costs_get(\n  unitId     = "CTCX-042",\n  startMonth = "2025-02",\n  endMonth   = "2025-02"\n)'},
     {kind:"raw warn",hd:"Raw tool response",
-     body:'unit: CTCX-042\nperiod: 2025-02 to 2025-02\ncurrency: CAD\ngranularity: month\n\nTravel & Expenses:\n  monthly:\n    2025-02 | forecast: 5000.00 CAD | actual: null CAD | variance: null CAD'},
+     body:'unit: CTCX-042\nperiod: 2025-02 to 2025-02\ncurrency: CAD\n\nTravel & Expenses:\n  monthly:\n    2025-02 | forecast: 5000.00 CAD | actual: null CAD | variance: null CAD'},
     {kind:"answer",hd:"Claude answer",
      body:"Travel & Expenses for February 2025 shows a 5,000 CAD forecast but the actual value is null — meaning no expense data has been received yet, not that the spend was zero. This is likely a data sync delay."}
   ],'McpFormatUtils.formatMonetary(null) returns the string "null". Claude must not interpret null as 0.00.'));
@@ -954,7 +947,7 @@ const ERROR_EXAMPLES=[
     {kind:"user",hd:"User request",
      body:"Why is there no budget data for CTCX-042 after the March 2025 import?"},
     {kind:"tool",hd:"Tool invocation",
-     body:'dc_ps_unit_costs_get(\n  unitId      = "CTCX-042",\n  startMonth  = "2025-03",\n  endMonth    = "2025-03",\n  granularity = "MONTH"\n)'},
+     body:'dc_ps_unit_costs_get(\n  unitId     = "CTCX-042",\n  startMonth = "2025-03",\n  endMonth   = "2025-03"\n)'},
     {kind:"raw err",hd:"Raw tool response",
      body:'error: NO_DATA — no monthly budget data found for unit: CTCX-042.'},
     {kind:"answer",hd:"Claude answer",
